@@ -76,8 +76,9 @@ settings =
 				{
 					CFBundleURLSchemes =
 					{
-					
-					}
+						"gobytruck"
+					},
+					CFBundleURLName = "com.gobytruck.gobytruck"
 				}
 			},
 			

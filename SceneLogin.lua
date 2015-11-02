@@ -17,12 +17,12 @@ local MessageY = 360
 local HIDDEN_PASSWORD_TEXT = "SOMEVALUETOSHOW"
 
 local INPUT_WIDTH = 280
-local INPUT_HEIGHT = 40
+local INPUT_HEIGHT = 30
 local BOX_SIZE = 25
 
 local showingAlert = false
 local bg = nil
-local header = nil
+
 local title = nil
 local btnLogin = nil
 local lblAutomaticLogin = nil
@@ -31,7 +31,6 @@ local check, checkbox = nil, nil
 local showingOverlay = false
 local tweenSplash = nil
 
-local lblUserHint, lblPassHint = nil, nil
 local bgUser, bgPass = nil, nil
 local tfUser, tfPass = nil, nil
 
@@ -372,9 +371,12 @@ function scene:create( event )
    userName = SceneManager.getUserID()
    password = ""
 
-   bg = display.newRect( sceneGroup,0, 0, 360, 570 )
-   bg:setFillColor(unpack(GC.DEFAULT_BG_COLOR))
+   bg = display.newImageRect(sceneGroup,"graphics/bg.png",display.contentWidth,display.contentHeight)
    bg.x, bg.y = display.contentCenterX, display.contentCenterY
+
+   logotag = display.newImageRect(sceneGroup,"graphics/logo_tag.png",256, 88 )
+   logotag.x, logotag.y = display.contentCenterX,  80
+   sceneGroup:insert(logotag)
 
    function bg:touch( event )
       if event.phase == "ended" or event.phase == "cancelled" then
@@ -384,23 +386,14 @@ function scene:create( event )
    
    bg:addEventListener( "touch", bg )
 
-   header = display.newRect( sceneGroup, 0, 0, display.contentWidth, GC.HEADER_HEIGHT )
-   header:setFillColor(unpack(GC.HEADER_COLOR))
-   header.x, header.y = display.contentCenterX, header.height * 0.5
+   
 
-   title = display.newImageRect(sceneGroup, "graphics/logo.png", GC.HEADER_LOGO_WIDTH, GC.HEADER_LOGO_HEIGHT)
-   title.x, title.y = header.x, header.y
 
-   bgUser = display.newRect( sceneGroup,0, 0, INPUT_WIDTH, INPUT_HEIGHT )
+   bgUser = display.newRoundedRect( sceneGroup,0, 0, INPUT_WIDTH, INPUT_HEIGHT + 10,8 )
    bgUser:setFillColor(unpack(GC.INPUT_FIELD_BG_COLOR))
    bgUser.strokeWidth = GC.INPUT_FIELD_BORDER_WIDTH
    bgUser:setStrokeColor(unpack(GC.INPUT_FIELD_BORDER_COLOR))
-   bgUser.x, bgUser.y = display.contentCenterX, 105
-
-   lblUserHint = display.newText(sceneGroup,SceneManager.getRosettaString("username_hint"), 0, 0, GC.HINT_FONT_TYPE, GC.HINT_FONT_SIZE)
-   lblUserHint:setFillColor(unpack(GC.HINT_TEXT_COLOR))
-   lblUserHint.anchorX = 0
-   lblUserHint.x, lblUserHint.y = bgUser.stageBounds.xMin, bgUser.stageBounds.yMin - lblUserHint.height * 0.5 - 5
+   bgUser.x, bgUser.y = display.contentCenterX, logotag.x + 50
 
    tfUser = native.newTextField(0, 0, INPUT_WIDTH - 10, INPUT_HEIGHT)
    tfUser:setReturnKey( "next" )
@@ -412,20 +405,17 @@ function scene:create( event )
    tfUser:addEventListener( "userInput", inputListener )
    tfUser.hasBackground = false
    tfUser.text = userName
+   tfUser.placeholder = "User Name"
    sceneGroup:insert(tfUser)
    tfUser.x, tfUser.y = bgUser.x, bgUser.y
 
-   bgPass = display.newRect( sceneGroup,0, 0, INPUT_WIDTH, INPUT_HEIGHT )
+   bgPass = display.newRoundedRect( sceneGroup,0, 0, INPUT_WIDTH, INPUT_HEIGHT + 10,8 )
    bgPass:setFillColor(unpack(GC.INPUT_FIELD_BG_COLOR))
    bgPass.strokeWidth = GC.INPUT_FIELD_BORDER_WIDTH
    bgPass:setStrokeColor(unpack(GC.INPUT_FIELD_BORDER_COLOR))
    bgPass.x, bgPass.y = display.contentCenterX, bgUser.stageBounds.yMax + INPUT_HEIGHT + 15
 
-   lblPassHint = display.newText(sceneGroup,SceneManager.getRosettaString("password_hint"), 0, 0, GC.HINT_FONT_TYPE, GC.HINT_FONT_SIZE)
-   lblPassHint:setFillColor(unpack(GC.HINT_TEXT_COLOR))
-   lblPassHint.anchorX = 0
-   lblPassHint.x, lblPassHint.y = bgPass.stageBounds.xMin, bgPass.stageBounds.yMin - lblPassHint.height * 0.5 - 5
-
+   
    tfPass = native.newTextField(0, 0, INPUT_WIDTH - 10, INPUT_HEIGHT)
    tfPass:setReturnKey( "go" )
    tfPass.id = "password"
@@ -436,6 +426,7 @@ function scene:create( event )
    tfPass:addEventListener( "userInput", inputListener )
    tfPass:setTextColor(unpack(GC.INPUT_FIELD_TEXT_COLOR))
    tfPass.hasBackground = false
+   tfPass.placeholder = "Password"
    sceneGroup:insert(tfPass)
    tfPass.x, tfPass.y = bgPass.x, bgPass.y
    
@@ -469,7 +460,7 @@ function scene:create( event )
    check.isVisible = hasAutomaticLogin
 
    lblAutomaticLogin = display.newText(sceneGroup, SceneManager.getRosettaString("automatic_login"), 0, 0, GC.APP_FONT, 20)
-   lblAutomaticLogin:setFillColor(unpack(GC.DEFAULT_TEXT_COLOR))
+   lblAutomaticLogin:setFillColor(unpack(GC.HINT_TEXT_COLOR))
    lblAutomaticLogin.anchorX = 0
    lblAutomaticLogin.x, lblAutomaticLogin.y = checkbox.stageBounds.xMax + 10, checkbox.y
 
@@ -529,18 +520,6 @@ function scene:destroy( event )
    bg:removeSelf()
    bg = nil
 
-   header:removeSelf()
-   header = nil
-
-   title:removeSelf()
-   title = nil
-
-   lblPassHint:removeSelf()
-   lblPassHint = nil
-
-   lblUserHint:removeSelf()
-   lblUserHint = nil
-
    bgUser:removeSelf()
    bgUser = nil
 
@@ -555,6 +534,9 @@ function scene:destroy( event )
 
    lblAutomaticLogin:removeSelf()
    lblAutomaticLogin = nil
+
+   logotag:removeSelf()
+   logotag = nil
 
    btnLogin:removeSelf()
    btnLogin = nil
