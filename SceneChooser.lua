@@ -29,7 +29,7 @@ local callback = nil
 
 local function onDriverClick()
    composer.hideOverlay( "fade", 400 )
-   SceneManager.goToLoginScene()
+   SceneManager.goToDriverLoginScene()
    --show overlay asking for phone number
 end
 
@@ -77,7 +77,7 @@ function scene:create( event )
    bg.x, bg.y = display.contentCenterX, display.contentCenterY
 
    imgLogo = display.newImageRect("graphics/logo_tag.png",256, 88 )
-   imgLogo.x, imgLogo.y = display.contentCenterX,  110
+   imgLogo.x, imgLogo.y = display.contentCenterX,  display.contentHeight *.2
    sceneGroup:insert(imgLogo)
 
    local elementWidth = display.contentWidth - PADDING * 2
@@ -126,7 +126,7 @@ function scene:create( event )
    sceneGroup:insert(textarea3)
 
    btnDriver = display.newImageRect("graphics/btnDriver.png",btnWidth,btnHeight)
-   btnDriver.x, btnDriver.y = display.contentCenterX/3 + btnSpace, textarea3.y + textarea3.height +50
+   btnDriver.x, btnDriver.y = display.contentCenterX/3 + btnSpace, display.contentHeight  *.9 - 10
    btnDriver:addEventListener("touch", onDriverClick)
    sceneGroup:insert(btnDriver)
 
