@@ -13,6 +13,7 @@ local navMenu = require("overlayNavMenu")
 local api = require("api")
 
 local sceneGroup = nil
+local msgCount = ""
 
 local PADDING = 10
 
@@ -220,37 +221,48 @@ local function showOptions(option_table)
    GC.TOOLS_OVERLAY = true
    local buttons = {}
    local options = {}
+   local badges = {}
 
    for i = 1, #option_table[index].options do
       buttons[i] = SceneManager.getRosettaString(option_table[index].options[i])
       options[i] = option_table[index].options[i]
+      badges[i] = ""
    end
+
+   local groups = {"Find Freight","My Quotes","Message Center", "Refer GBT","Log Out"}
    
    local userRole = SceneManager.getUserRoleType()
-
+   
    table.insert(buttons,SceneManager.getRosettaString("message_center"))
    table.insert(options,"message_center")
+   table.insert(badges,db.getMessageCount(SceneManager.getUserSID()))
 
    if (userRole ~= GC.USER_ROLE_TYPE_DRIVER) then
       table.insert(buttons,SceneManager.getRosettaString("feedback"))
       table.insert(options,"feedback")
+      table.insert(badges,"")
    end
 
    table.insert(buttons,SceneManager.getRosettaString("refer_gbt"))
    table.insert(options,"refer_gbt")
+    table.insert(badges,"")
 
    if (userRole == GC.USER_ROLE_TYPE_CARRIER) then
       table.insert(buttons,SceneManager.getRosettaString("locate_drivers"))
       table.insert(options,"locate_drivers")
+      table.insert(badges,"")
    end
 
    table.insert(buttons,SceneManager.getRosettaString("log_out"))
    table.insert(options,"log_out")
+   table.insert(badges,"")
 	
    navMenu:show({
       options = buttons,
       ids = options,
-      callback=toolsComplete
+      badges = badges,
+      callback=toolsComplete,
+      groups = groups
    })
 end
 
