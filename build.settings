@@ -71,15 +71,18 @@ settings =
 
 			UIApplicationExitsOnSuspend = false,
 
+			
 			CFBundleURLTypes =
 			{
 				{
 					CFBundleURLSchemes =
 					{
-					
-					}
+						"gobytruck"
+					},
+					CFBundleURLName = "com.gobytruck.gobytruck"
 				}
 			},
+
 			
 	        UIPrerenderedIcon = true,
 	        CFBundleDisplayName="Go By Truck",

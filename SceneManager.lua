@@ -426,6 +426,10 @@ function goToLoginScene()
 	composer.gotoScene("SceneLogin")
 end
 
+function goToDriverLoginScene()
+	composer.gotoScene("SceneDriverLogin")
+end
+
 function goToRegistration()
 	composer.gotoScene("SceneRegistration")
 end

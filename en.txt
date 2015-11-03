@@ -45,6 +45,7 @@
 	"back":"Back",
 	"username_hint":"User Name",
 	"password_hint":"Password",
+	"phonenumber_hint":"Phone Number",
 	"automatic_login":"Log me in automatically",
 	"login":"Log In",
 	"shipper_registration":"Shipper Registration",
