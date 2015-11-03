@@ -29,8 +29,8 @@ local callback = nil
 
 local function onDriverClick()
    composer.hideOverlay( "fade", 400 )
-   --show overlay asking for phone number
    SceneManager.goToDriverLoginScene()
+   --show overlay asking for phone number
 end
 
 local function onShipperClick()
@@ -69,81 +69,78 @@ function scene:create( event )
       }
    end
 
-   overlay = display.newRect(sceneGroup,0, 0, 360, 570)
+  overlay = display.newRect(sceneGroup,0, 0, 360, 570)
    overlay:setFillColor(0,0,0,0)
    overlay.x, overlay.y = display.contentCenterX, display.contentCenterY
 
-   bg = display.newRect(sceneGroup,0,0,display.contentWidth - 20,400)
-   bg:setFillColor(1,1,1)
-   bg.strokeWidth = 1
-   bg:setStrokeColor(unpack(GC.DARK_GRAY))
+   bg = display.newImageRect(sceneGroup,"graphics/bg.png",display.contentWidth,display.contentHeight)
    bg.x, bg.y = display.contentCenterX, display.contentCenterY
 
-   titleBG = display.newRect( sceneGroup, 0, 0, bg.width, 40 )
-   titleBG:setFillColor(unpack(GC.DARK_GRAY2))
-   titleBG.x, titleBG.y = display.contentCenterX, bg.stageBounds.yMin + titleBG.height * 0.5
+   imgLogo = display.newImageRect("graphics/logo_tag.png",256, 88 )
+   imgLogo.x, imgLogo.y = display.contentCenterX,  display.contentHeight *.2
+   sceneGroup:insert(imgLogo)
 
-   title = display.newText(sceneGroup, SceneManager.getRosettaString("Choose Your Role"), 0, 0, GC.SCREEN_TITLE_FONT, GC.SCREEN_TITLE_SIZE)
-   title.x, title.y = titleBG.x, titleBG.y
+   local elementWidth = display.contentWidth - PADDING * 2
+   local minX = display.contentWidth + PADDING
+   local yOffset = SELECTOR_DEFAULT_HEIGHT * 0.5
+   local btnWidth = 75
+   local btnHeight = 97
+   local btnSpace = 20
 
-   local elementWidth = bg.width - PADDING * 2
-   local minX = bg.stageBounds.xMin + PADDING
-   local yOffset = titleBG.stageBounds.yMax + SELECTOR_DEFAULT_HEIGHT * 0.5
-   local btnWidth = 200
+   local text1 = [[Go By Truck is the first full service system designed and build specifically
+    for the shipping industry. Our founders spent years in the industry with one mission: ]]
 
-   btnDriver = widget.newButton {
-      id = "driver",
-      defaultColor = GC.BUTTON_ACTION_BACKGROUND_COLOR,
-      overColor = GC.BUTTON_ACTION_BACKGROUND_COLOR_OVER,
-      font = GC.BUTTON_FONT,
-      fontSize = 18,
-      label="Driver",
-      labelColor = { default=GC.BUTTON_TEXT_COLOR, over=GC.BUTTON_TEXT_COLOR_OVER },
-      width = btnWidth,
-      height = 35,
-      cornerRadius = GC.BUTTON_ACTION_RADIUS_SIZE,
-      strokeColor = GC.BUTTON_ACTION_BORDER_COLOR,
-      strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
-      onRelease = onDriverClick
+   local text2 = [[To design and build a sustainable free market system that will change the face
+    of the shipping industry.]]
+   local text3 = [[Please select your role:]]
+   local options = {
+      text = text1,
+      x = display.contentCenterX,
+      width = imgLogo.width + 20,
+      fontSize = 14,
+      align = "center",
+      font = GC.APP_FONT
    }
-   btnDriver.x, btnDriver.y = display.contentCenterX, titleBG.y + btnDriver.height + 15
+
+   textarea1 = display.newText(options)
+   textarea1.y=imgLogo.y + imgLogo.height + 20
+   sceneGroup:insert(textarea1)
+
+   textarea2 = display.newText(options)
+   textarea2.text=text2
+   textarea2.y=textarea1.y + textarea1.height
+   sceneGroup:insert(textarea2)
+
+   local options = {
+      text = text1,
+      x = display.contentCenterX,
+      width = imgLogo.width + 20,
+      fontSize = 20,
+      align = "center",
+      font = GC.APP_FONT
+   }
+
+   textarea3 = display.newText(options)
+   textarea3.y=textarea2.y + textarea2.height 
+   textarea3.text = text3
+   sceneGroup:insert(textarea3)
+
+   btnDriver = display.newImageRect("graphics/btnDriver.png",btnWidth,btnHeight)
+   btnDriver.x, btnDriver.y = display.contentCenterX/3 + btnSpace, display.contentHeight  *.9 - 10
+   btnDriver:addEventListener("touch", onDriverClick)
    sceneGroup:insert(btnDriver)
 
-   btnShipper = widget.newButton {
-      id = "shipper",
-      defaultColor = GC.BUTTON_ACTION_BACKGROUND_COLOR,
-      overColor = GC.BUTTON_ACTION_BACKGROUND_COLOR_OVER,
-      font = GC.BUTTON_FONT,
-      fontSize = 18,
-      label="Shipper",
-      labelColor = { default=GC.BUTTON_TEXT_COLOR, over=GC.BUTTON_TEXT_COLOR_OVER },
-      width = btnWidth,
-      height = 35,
-      cornerRadius = GC.BUTTON_ACTION_RADIUS_SIZE,
-      strokeColor = GC.BUTTON_ACTION_BORDER_COLOR,
-      strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
-      onRelease = onShipperClick
-   }
-   btnShipper.x, btnShipper.y = display.contentCenterX, btnDriver.y + btnShipper.height + 15
+   btnCarrier = display.newImageRect("graphics/btnCarrier.png",btnWidth,btnHeight)
+   btnCarrier.x, btnCarrier.y = btnDriver.x + btnWidth + btnSpace, btnDriver.y
+   btnCarrier:addEventListener("touch", onCarrierClick)
+   sceneGroup:insert(btnCarrier)
+
+   btnShipper = display.newImageRect("graphics/btnShipper.png",btnWidth,btnHeight)
+   btnShipper.x, btnShipper.y = btnCarrier.x + btnWidth + btnSpace, btnCarrier.y
+   btnShipper:addEventListener("touch", onShipperClick)
    sceneGroup:insert(btnShipper)
 
-   btnCarrier = widget.newButton {
-      id = "carrier",
-      defaultColor = GC.BUTTON_ACTION_BACKGROUND_COLOR,
-      overColor = GC.BUTTON_ACTION_BACKGROUND_COLOR_OVER,
-      font = GC.BUTTON_FONT,
-      fontSize = 18,
-      label=SceneManager.getRosettaString("carrier",1),
-      labelColor = { default=GC.BUTTON_TEXT_COLOR, over=GC.BUTTON_TEXT_COLOR_OVER },
-      width = btnWidth,
-      height = 35,
-      cornerRadius = GC.BUTTON_ACTION_RADIUS_SIZE,
-      strokeColor = GC.BUTTON_ACTION_BORDER_COLOR,
-      strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
-      onRelease = onCarrierClick
-   }
-   btnCarrier.x, btnCarrier.y = display.contentCenterX, btnShipper.y + btnCarrier.height + 15
-   sceneGroup:insert(btnCarrier)
+  
 end
 
 function scene:show( event )
@@ -187,11 +184,15 @@ function scene:destroy( event )
    btnCarrier:removeSelf()
    btnCarrier = nil
 
-   titleBG:removeSelf()
-   titleBG = nil
+   imgLogo:removeSelf()
+   imgLogo = nil
 
-   title:removeSelf()
-   title = nil
+   textarea1:removeSelf()
+   textarea1 = nil
+   textarea2:removeSelf()
+   textarea2 = nil
+   textarea3:removeSelf()
+   textarea3 = nil
 
    for i = 1, #elements do
       elements[1]:removeSelf()
