@@ -1,0 +1,91 @@
+-- build.settings
+ 
+settings =
+{
+	orientation = 
+	{
+		default = "portrait", 		
+	},
+	plugins = 
+	{
+		["plugin.zip"] =
+		{
+		 	publisherId = "com.coronalabs",
+		},
+		["plugin.notifications"] =
+        {
+            publisherId = "com.coronalabs",
+        },
+	},
+	android =
+	{
+		versionCode = "2000000",
+		installLocation="preferExternal",
+		permissions =
+		{
+			{ name = ".permission.C2D_MESSAGE", protectionLevel = "signature" },
+		},
+		usesPermissions =
+		{
+			"android.permission.INTERNET",
+			"android.permission.WRITE_EXTERNAL_STORAGE",
+	    	"android.permission.ACCESS_FINE_LOCATION",
+			"android.permission.ACCESS_COARSE_LOCATION",
+			"android.permission.CAMERA",
+			"android.permission.GET_ACCOUNTS",
+			"android.permission.RECEIVE_BOOT_COMPLETED",
+			"com.google.android.c2dm.permission.RECEIVE",
+			".permission.C2D_MESSAGE",
+		},
+	},
+
+
+	iphone = 
+	{
+	    plist = 
+	    {
+	    	CFBundleIconFiles = 
+	    	{
+				"Icon.png",
+	            "Icon@2x.png",
+	            "Icon-60.png",
+	            "Icon-60@2x.png",
+	            "Icon-72.png",
+	            "Icon-72@2x.png",
+	            "Icon-76.png",
+	            "Icon-76@2x.png",
+	            "Icon-Small.png",
+	            "Icon-Small@2x.png",
+	            "Icon-Small-40.png",
+	            "Icon-Small-40@2x.png",
+	            "Icon-Small-50.png",
+	            "Icon-Small-50@2x.png"
+			},
+			NSLocationWhenInUseUsageDescription = "Access to location services is necessary for shipment and driver location.",
+        
+			UIAppFonts = 
+			{
+				"Open Sans Light.ttf",
+				"Oswald.ttf"
+			},
+
+			UIApplicationExitsOnSuspend = false,
+
+			CFBundleURLTypes =
+			{
+				{
+					CFBundleURLSchemes =
+					{
+					
+					}
+				}
+			},
+			
+	        UIPrerenderedIcon = true,
+	        CFBundleDisplayName="Go By Truck",
+	        CFBundleIdentifier="com.gobytruck.gobytruck",
+	        CFBundleVersion="2.1"
+	            
+	    },
+	},
+}
