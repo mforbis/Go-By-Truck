@@ -4,15 +4,19 @@ module(..., package.seeall)
 ---------- MAIN APPLICATION CONFIG --------------
 -------------------------------------------------
 APP_FONT = "Open Sans Light" --native.systemFontBold
-
+IS_DEV = true
 SHOW_SPLASH_MS = 3000
 
 local port = 8443
 API_KEY = "m00nBeamSpringfieldMo!"
 
-BASE_URL = "https://www.gbthq.com:"..port.."/mobile/"
---BASE_URL = "https://www.gobytruck.com/mobile/"
-
+if (IS_DEV) then
+	BASE_URL = "https://www.gbthq.com:"..port.."/mobile/"
+	MAIN_URL = "https://www.gbthq.com:"..port
+else
+	BASE_URL = "https://www.gobytruck.com/mobile/"
+	MAIN_URL = "https://www.gobytruck.com"
+end
 -- iTunes App Id for rating and such
 APP_ID ="817786975"
 APP_NAME ="Go By Truck"
@@ -28,10 +32,12 @@ LIGHT_GRAY = {245/255,245/255,245/255}
 LIGHT_GRAY2 = {230/255,230/255,230/255}
 MEDIUM_GRAY = {172/255,172/255,172/255}
 MEDIUM_GRAY2 = {163/255,163/255,163/255}
+MEDIUM_GRAY3 = {113/255,104/255,102/255}
 DARK_GRAY = {68/255,68/255,68/255}--{66/255,66/255,66/255}
 DARK_GRAY2 = {0.4,0.4,0.4}
 DARK_GRAY3 = {0.3,0.3,0.3}
 ORANGE = {239/255,96/255,40/255}--233/255,78/255,27/255--{242/255,139/255,36/255}
+ORANGE2 = {192/255,65/255,23/255}
 ORANGE_OVER = {189/255,63/255,22/255}
 WHITE = {1,1,1}
 BLACK = {0,0,0}
