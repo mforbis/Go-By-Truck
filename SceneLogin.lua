@@ -324,6 +324,8 @@ local function onEventCallback(event)
 	if (event.target.id == "login") then
       clearSID()
       handleLogin()
+   elseif (event.target.id == "signup") then
+      system.openURL( GC.MAIN_URL .. "/register" )
 	end
 end
 
@@ -430,22 +432,44 @@ function scene:create( event )
    sceneGroup:insert(tfPass)
    tfPass.x, tfPass.y = bgPass.x, bgPass.y
    
-   btnLogin = widget.newButton{
-      id = "login",
-      defaultColor = GC.BUTTON_ACTION_BACKGROUND_COLOR,
+   btnSignup = widget.newButton{
+      id = "signup",
+      defaultColor = GC.MEDIUM_GRAY3,
       overColor = GC.BUTTON_ACTION_BACKGROUND_COLOR_OVER,
       font = GC.BUTTON_FONT,
       fontSize = GC.BUTTON_FONT_SIZE,
-      label=SceneManager.getRosettaString("login"),
+      label=SceneManager.getRosettaString("signup"),
       labelColor = { default=GC.BUTTON_TEXT_COLOR, over=GC.BUTTON_TEXT_COLOR_OVER },
-      width = INPUT_WIDTH * 0.5,
-      height = INPUT_HEIGHT,
+      width = INPUT_WIDTH * 0.5 - 5,
+      height = INPUT_FIELD_TEXT_SIZE,
       cornerRadius = GC.BUTTON_ACTION_RADIUS_SIZE,
       strokeColor = GC.BUTTON_ACTION_BORDER_COLOR,
       strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
       onRelease = onEventCallback
    }
-   btnLogin.x, btnLogin.y =  bgPass.stageBounds.xMin + btnLogin.width * 0.5, bgPass.stageBounds.yMax + btnLogin.height * 0.5 + 10
+   btnSignup.x, btnSignup.y =  bgPass.stageBounds.xMin + btnSignup.width * 0.5, bgPass.stageBounds.yMax + btnSignup.height * 0.5 + 10
+   sceneGroup:insert(btnSignup)
+
+
+   btnLogin = widget.newButton{
+      id = "login",
+      defaultColor = GC.ORANGE2,
+      overColor = GC.BUTTON_ACTION_BACKGROUND_COLOR_OVER,
+      font = GC.BUTTON_FONT,
+      fontSize = GC.BUTTON_FONT_SIZE,
+      label=SceneManager.getRosettaString("login"),
+      labelColor = { default=GC.BUTTON_TEXT_COLOR, over=GC.BUTTON_TEXT_COLOR_OVER },
+      width = INPUT_WIDTH * 0.5 - 5,
+      height = INPUT_FIELD_TEXT_SIZE,
+      cornerRadius = GC.BUTTON_ACTION_RADIUS_SIZE,
+      strokeColor = GC.BUTTON_ACTION_BORDER_COLOR,
+      strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
+      onRelease = onEventCallback
+   }
+   btnLogin.x, btnLogin.y =  btnSignup.x + btnSignup.width + 10, btnSignup.y
+
+   
+
    sceneGroup:insert(btnLogin)
 
    checkbox = display.newRect( sceneGroup, 0, 0, BOX_SIZE, BOX_SIZE )

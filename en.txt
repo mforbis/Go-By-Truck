@@ -47,6 +47,7 @@
 	"password_hint":"Password",
 	"automatic_login":"Log me in automatically",
 	"login":"Log In",
+	"signup":"sign up",
 	"shipper_registration":"Shipper Registration",
 	"fields_not_set_title":"Missing Field(s)",
 	"fields_not_set_message":"Please enter all required fields",

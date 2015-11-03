@@ -29,6 +29,7 @@ local callback = nil
 
 local function onDriverClick()
    composer.hideOverlay( "fade", 400 )
+   SceneManager.goToLoginScene()
    --show overlay asking for phone number
 end
 
