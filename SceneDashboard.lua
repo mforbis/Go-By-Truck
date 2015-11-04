@@ -46,6 +46,9 @@ local PRIMARY_ICON_SIZE = 50
 
 local messageQ = nil
 
+
+
+
 local tool_options = {
    {role = GC.USER_ROLE_TYPE_CARRIER, options = {"find_freight","gbt_bank","my_shipments","my_quotes","my_trailers"}},  
    {role = GC.USER_ROLE_TYPE_SHIPPER, options = {"post_shipment","locate_shipment","my_shipments","my_quotes","gbt_bank"}},
@@ -119,15 +122,19 @@ local function updateLocationStatus()
    local color = GC.MEDIUM_GRAY
    local overColor = GC.DARK_GRAY
    local borderColor = GC.DARK_GRAY
-   
+
    if (SceneManager.getLocationState()) then
       label = "on"
       color = GC.ORANGE
       overColor = GC.ORANGE_OVER
       borderColor = GC.ORANGE_OVER
       bgServices.startLocationService()
+      getElementById("LocationAlert"):setFillColor(unpack(GC.ORANGE2))
+      getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_ACTIVE")
    else
       bgServices.stopLocationService()
+      getElementById("LocationAlert"):setFillColor(unpack(GC.MEDIUM_GRAY3))
+      getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_INACTIVE")
    end
    
    primaryButtons[2]:setDefaultColor(color)
@@ -153,11 +160,16 @@ end
 local function toggleLocationState()
    SceneManager.toggleLocationState()
    getElementById("send_location").setState(SceneManager.getLocationState())
+   
 
    if (SceneManager.getLocationState()) then
       bgServices.startLocationService()
+      getElementById("LocationAlert"):setFillColor(unpack(GC.ORANGE2))
+      getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_ACTIVE")
    else
       bgServices.stopLocationService()
+      getElementById("LocationAlert"):setFillColor(unpack(GC.MEDIUM_GRAY3))
+      getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_INACTIVE")
    end
 end
 
@@ -195,7 +207,11 @@ local function handleLogout()
    _G.removeTag(SceneManager.getUserSID())
    SceneManager.setUserSID("")
    SceneManager.setSessionId(nil)
-   SceneManager.goToLoginScene()
+   if SceneManager.getUserRole() == GC.API_ROLE_DRIVER then
+      SceneManager.goToDriverLoginScene()
+   else
+      SceneManager.goToLoginScene()
+   end
 end
 
 local function getRoleIndex(table)
@@ -1333,10 +1349,32 @@ end
 local function addDriverContent()
    local idx = getNextElement()
 
+   elements[idx] = display.newRoundedRect( 0, 0, display.contentWidth-22, 50 ,8 )
+   elements[idx].id = "LocationAlert"
+   elements[idx]:setFillColor(unpack(GC.MEDIUM_GRAY3))
+   elements[idx].strokeWidth = GC.INPUT_FIELD_BORDER_WIDTH
+   elements[idx]:setStrokeColor(unpack(GC.INPUT_FIELD_BORDER_COLOR))
+   elements[idx].x, elements[idx].y = display.contentCenterX, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING
+   scrollView:insert(elements[idx])
+
+   idx = getNextElement()
+   elements[idx] = display.newText({
+      text = SceneManager.getRosettaString("LOCATION_INACTIVE"),
+      width = 400,
+      fontSize =  GC.BUTTON_FONT_SIZE,
+      align = "center",
+      font = GC.BUTTON_FONT
+   })
+   elements[idx].id = "txtLocationAlert"
+   elements[idx].x, elements[idx].y = display.contentCenterX, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING + 5
+   scrollView:insert(elements[idx])
+   setCurrentScrollPosition()
+
+   idx = getNextElement()
    elements[idx] = display.newRect(0,0,scrollView.innerWidth,100)
    elements[idx].id = "your_alerts"
    elements[idx]:setFillColor(1,1,1)
-   elements[idx].x, elements[idx].y = scrollView.x, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING
+   elements[idx].x, elements[idx].y = scrollView.x, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING - 10
    scrollView:insert(elements[idx])
 
    idx = getNextElement()
@@ -1475,6 +1513,11 @@ local function addDriverContent()
 
    setCurrentScrollPosition("location")
    
+
+   if(SceneManager.getLocationState()) then
+      getElementById("LocationAlert"):setFillColor(unpack(GC.ORANGE2))
+      getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_ACTIVE")
+   end
 
 end
 

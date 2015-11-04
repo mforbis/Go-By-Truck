@@ -591,5 +591,7 @@
 	"APPLICATION_EXCEPTION":"An error has occurred and administrators have been notified",
 	"INSUFFICIENT_PARAMETERS":"Insufficient Parameters",
 	"TRAILER_DOES_NOT_EXIST":"Trailer Doesn't Exist",
-	"TRAILER_ALREADY_EXISTS":"Trailer Already Exists"
+	"TRAILER_ALREADY_EXISTS":"Trailer Already Exists",
+	"LOCATION_ACTIVE":"Locating - Active",
+	"LOCATION_INACTIVE":"Locating - Inactive"
 }

@@ -388,9 +388,6 @@ function scene:create( event )
    
    bg:addEventListener( "touch", bg )
 
-   
-
-
    bgUser = display.newRoundedRect( sceneGroup,0, 0, INPUT_WIDTH, INPUT_HEIGHT + 10,8 )
    bgUser:setFillColor(unpack(GC.INPUT_FIELD_BG_COLOR))
    bgUser.strokeWidth = GC.INPUT_FIELD_BORDER_WIDTH

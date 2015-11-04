@@ -11,6 +11,7 @@ local utils = require("utils")
 local SETTINGS_NRUNS_KEY = "nRuns"
 local SETTINGS_AUTOMATIC_LOGIN_KEY = "automaticLogin"
 local SETTINGS_USER_ID_KEY = "userID"
+local SETTINGS_USER_PHONE_KEY = "userPhone"
 local SETTINGS_USER_PASS_KEY = "colors"
 local SETTINGS_USER_SID_KEY = "userSID"
 local SETTINGS_LANGUAGE_KEY = "language"
@@ -273,6 +274,16 @@ function setUserID(id)
 	setSetting(SETTINGS_USER_ID_KEY,id)
 end
 
+function getUserPhoneID()
+	-- TODO: Need to decrypt this value
+	return getSetting(SETTINGS_USER_PHONE_KEY,"")
+end
+
+function setUserPhoneID(id)
+	-- TODO: Need to encrypt this value
+	setSetting(SETTINGS_USER_PHONE_KEY,id)
+end
+
 function setUserTag(id)
 	_G.setTag(id)
 end
@@ -383,6 +394,7 @@ function init()
 	
 	automaticLogin = getSetting(SETTINGS_AUTOMATIC_LOGIN_KEY,false)
 	userSID = getSetting(SETTINGS_USER_SID_KEY,"")
+	print("---"..userSID)
 	location = getSetting(SETTINGS_LOCATION_KEY,false)
 	
 	--hasSound = getSetting("hasSound",true)

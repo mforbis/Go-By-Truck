@@ -483,6 +483,26 @@ function login(params)
 	sendNetworkRequest("login?"..queryString)
 end
 
+function Driverlogin(params)
+	setCallback(params.callback)
+	local queryString = nil
+	-- TODO: This should be some kind of global
+	-- Look for apiTimeout and showPD=false in other files (shipments, quotes, etc...)
+	if (params.showPD ~= nil) then
+		showPD = params.showPD
+	end
+	--isTesting = "login"
+
+	if (params.sid) then
+		queryString = "sid="..params.sid
+		sendNetworkRequest("login?"..queryString)
+	else
+		queryString = "cn="..url.escape(params.cn)
+		sendNetworkRequest("getDriverByCellNumber?"..queryString)
+	end
+	
+end
+
 function checkSessionId(params)
 	setCallback(params.callback)
 
