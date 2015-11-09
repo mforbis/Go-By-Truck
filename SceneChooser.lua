@@ -140,7 +140,6 @@ function scene:create( event )
    btnShipper:addEventListener("touch", onShipperClick)
    sceneGroup:insert(btnShipper)
 
-  
 end
 
 function scene:show( event )

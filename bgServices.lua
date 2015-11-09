@@ -8,6 +8,8 @@ local GC = require("AppConstants")
 local currPoint = {}
 local lastPoint = {}
 
+LocationOffCallback = nil
+
 local TIME_
 _G.bgServicesRunning = false
 
@@ -46,6 +48,10 @@ local function driverLocationCallback(event)
 	else
 	  	messageQ = "Couldn't Send Driver Location"
 	end
+
+	--if (response.locating == "disabled") then
+	--	stopLocationService()
+	--end
    
 	--print ("GBT: (locationCallback) - "..messageQ)
 end
@@ -125,6 +131,8 @@ end
 function stopLocationService()
 	if (_G.bgServicesRunning) then
 		print ("GBT: Stopping Location Service")
+
+		--local cbResult = LocationOffCallback()
 
 		Runtime:removeEventListener( "location", locationHandler )
 		_G.bgServicesRunning = false

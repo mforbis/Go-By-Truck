@@ -378,6 +378,13 @@ function scene:create( event )
 
    logotag = display.newImageRect(sceneGroup,"graphics/logo_tag.png",256, 88 )
    logotag.x, logotag.y = display.contentCenterX,  80
+   function logotag:touch( event )
+      if event.phase == "ended" or event.phase == "cancelled" then
+         SceneManager.setAppLoad(true)
+         SceneManager.goToHomeScene()
+      end
+   end
+   logotag:addEventListener( "touch", logotag )
    sceneGroup:insert(logotag)
 
    function bg:touch( event )

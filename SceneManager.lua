@@ -394,7 +394,7 @@ function init()
 	
 	automaticLogin = getSetting(SETTINGS_AUTOMATIC_LOGIN_KEY,false)
 	userSID = getSetting(SETTINGS_USER_SID_KEY,"")
-	print("---"..userSID)
+	
 	location = getSetting(SETTINGS_LOCATION_KEY,false)
 	
 	--hasSound = getSetting("hasSound",true)
@@ -432,6 +432,10 @@ end
 
 function showOverlay(scene,params)
 	composer.showOverlay(scene, {effect = GC.OVERLAY_ACTION_SHOW,time=GC.SCENE_TRANSITION_TIME_MS, isModal=true, params = params})
+end
+
+function goToHomeScene()
+	composer.gotoScene("SceneChooser")
 end
 
 function goToLoginScene()

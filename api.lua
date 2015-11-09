@@ -465,6 +465,52 @@ local function sendNetworkRequest(url,command)
 	end
 end
 
+function doesFileExist( fname )
+
+    local results = false
+
+    -- Path for the file
+    local filePath = system.pathForFile(system.DocumentsDirectory) .. "/" .. fname
+
+    if ( filePath ) then
+        local file, errorString = io.open( filePath, "r" )
+
+        if not file then
+            -- Error occurred; output the cause
+            --print( "File error: " .. errorString )
+        else
+            -- File exists!
+            --print( "File found: " .. fname )
+            results = true
+            -- Close the file handle
+            file:close()
+        end
+    end
+
+    return results
+end
+
+function WriteFile( fname, content )
+
+	-- Path for the file to write
+	local path = system.pathForFile(system.DocumentsDirectory) .. "/" .. fname
+	
+	-- Open the file handle
+	local file, errorString = io.open( path, "w+" )
+
+	if not file then
+	    -- Error occurred; output the cause
+	    --print( "File error: " .. errorString )
+	else
+	    -- Write data to file
+	    file:write( content )
+	    -- Close the file handle
+	    io.close( file )
+	end
+
+	file = nil
+end
+
 function login(params)
 	setCallback(params.callback)
 	local queryString = nil
@@ -497,8 +543,21 @@ function Driverlogin(params)
 		queryString = "sid="..params.sid
 		sendNetworkRequest("login?"..queryString)
 	else
+		queryString = "cell="..url.escape(params.cn)
+		sendNetworkRequest("login?"..queryString)
+	end
+	
+end
+
+function DriverLoadCount(params)
+	setCallback(params.callback)
+	local queryString = nil
+	if (params.sid) then
+		queryString = "sid="..params.sid
+		sendNetworkRequest("getDriverLoadsCount?"..queryString)
+	else
 		queryString = "cn="..url.escape(params.cn)
-		sendNetworkRequest("getDriverByCellNumber?"..queryString)
+		sendNetworkRequest("getDriverLoadsCount?"..queryString)
 	end
 	
 end

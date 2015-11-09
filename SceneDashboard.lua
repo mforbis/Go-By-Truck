@@ -11,6 +11,7 @@ local status = require("status")
 local toggle = require("toggle")
 local navMenu = require("overlayNavMenu")
 local api = require("api")
+local loadcount = 0
 
 local sceneGroup = nil
 
@@ -40,6 +41,7 @@ local BADGE_LABEL_COLOR = GC.ORANGE
 local badgeBG, badge = nil, nil
 local badges = nil
 local updatingBadges = nil
+local gettingloads = nil
 
 local PRIMARY_SIZE = 145
 local PRIMARY_ICON_SIZE = 50
@@ -87,6 +89,9 @@ local elements = nil
 local menuSelected = nil
 
 
+
+
+
 local function getElementById(id)
    local index = nil
 
@@ -129,11 +134,11 @@ local function updateLocationStatus()
       overColor = GC.ORANGE_OVER
       borderColor = GC.ORANGE_OVER
       bgServices.startLocationService()
-      getElementById("LocationAlert"):setFillColor(unpack(GC.ORANGE2))
+      getElementById("LocationAlert").setFillColor(unpack(GC.ORANGE2))
       getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_ACTIVE")
    else
       bgServices.stopLocationService()
-      getElementById("LocationAlert"):setFillColor(unpack(GC.MEDIUM_GRAY3))
+      getElementById("LocationAlert").setFillColor(unpack(GC.MEDIUM_GRAY3))
       getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_INACTIVE")
    end
    
@@ -172,6 +177,18 @@ local function toggleLocationState()
       getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_INACTIVE")
    end
 end
+
+local function LocationOffCallback()
+   print('turned off')
+   SceneManager.setLocationState(false)
+   getElementById("send_location").setState(SceneManager.getLocationState())
+   getElementById("LocationAlert"):setFillColor(unpack(GC.MEDIUM_GRAY3))
+   getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_INACTIVE")
+  
+end
+
+bgServices.LocationOffCallback = LocationOffCallback
+
 
 local function showDriverMap()
    if (_G.currPoint.lat == 0 or _G.currPoint.lon == 0) then
@@ -1345,6 +1362,50 @@ local function addCarrierContent()
 
    setCurrentScrollPosition("location")
 end
+local function alertDismiss(event)
+   showingAlert = false
+end
+local function apiLoadsCallback(response)
+  
+   if (response == nil or response.user == nil) then
+      messageQ = "invalid_server_response"
+   elseif (response.user.statusId == GC.API_ERROR) then
+         messageQ = response.error_msg.errorMessage or "server_error"
+   elseif (response.user.statusId == GC.API_USER_APPROVED) then
+      if (response.user.userGuid ~= nil and response.user.masterRole ~= nil) then
+         loadcount = response.loadCount
+      else
+         messageQ = "invalid_server_response"
+      end
+   else
+      messageQ = "user_not_approved"
+   end
+   if(db.checkFirstLoad("WelcomeDriver")) then
+      if loadcount>0 then
+         showingAlert = true
+          alert:show({title = "Welcome",buttonAlign="horizontal",
+          message = SceneManager.getRosettaString("DRIVER_FIRSTLOAD_LOAD"),
+          buttons={SceneManager.getRosettaString("ok")},
+          callback=alertDismiss})
+      else
+         showingAlert = true
+          alert:show({title = "Welcome",buttonAlign="horizontal",
+          message = SceneManager.getRosettaString("DRIVER_FIRSTLOAD_NOLOAD"),
+          buttons={SceneManager.getRosettaString("ok")},
+          callback=alertDismiss})
+      end
+   end
+   gettingloads = false
+end
+local function getLoads()
+   if(gettingloads ~= true) then
+      gettingloads=true
+      api.DriverLoadCount({sid=SceneManager.getUserSID(),callback=apiLoadsCallback})
+   end 
+end
+
+
+
 
 local function addDriverContent()
    local idx = getNextElement()
@@ -1401,6 +1462,7 @@ local function addDriverContent()
 		end
 	end
 	buttonSubmit:addEventListener("touch",touchToSubmit)
+
  end
    
    --createSubmitButton()
@@ -1519,6 +1581,8 @@ local function addDriverContent()
       getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_ACTIVE")
    end
 
+   getLoads()
+
 end
 
 local function addContent()
@@ -1561,6 +1625,8 @@ local function addContent()
    -- Social Bar
    addSocialContent()
 
+   
+
 end
 
 function scene:create( event )
@@ -1569,6 +1635,7 @@ function scene:create( event )
    menuSelected = false
    showLocation = false
    updatingBadges = false
+   gettingloads = false
 
    bg = display.newRect( sceneGroup,0, 0, 360, 570 )
    bg:setFillColor(unpack(GC.LIGHT_GRAY2))
@@ -1611,6 +1678,8 @@ function scene:create( event )
    --lotsOfTextObject.y = titleText.y + titleText.contentHeight + 10
 
    --scrollView:insert( lotsOfTextObject )
+
+
 end
 
 function scene:show( event )
@@ -1622,6 +1691,9 @@ function scene:show( event )
    elseif ( phase == "did" ) then
       updateBadges()
       _G.appExit = true
+
+
+      
    end
 end
 
