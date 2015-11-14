@@ -16,7 +16,7 @@ local loadcount = 0
 local sceneGroup = nil
 
 local PADDING = 10
-
+local ShowedFirstLoad = nil
 local bg = nil
 local header = nil
 local logo = nil
@@ -179,7 +179,6 @@ local function toggleLocationState()
 end
 
 local function LocationOffCallback()
-   print('turned off')
    SceneManager.setLocationState(false)
    getElementById("send_location").setState(SceneManager.getLocationState())
    getElementById("LocationAlert"):setFillColor(unpack(GC.MEDIUM_GRAY3))
@@ -187,7 +186,16 @@ local function LocationOffCallback()
   
 end
 
+local function LocationOnCallback()
+   SceneManager.setLocationState(true)
+   getElementById("send_location").setState(SceneManager.getLocationState())
+   getElementById("LocationAlert"):setFillColor(unpack(GC.ORANGE2))
+   getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_ACTIVE")
+  
+end
+
 bgServices.LocationOffCallback = LocationOffCallback
+bgServices.LocationOnCallback = LocationOnCallback
 
 
 local function showDriverMap()
@@ -1365,6 +1373,37 @@ end
 local function alertDismiss(event)
    showingAlert = false
 end
+local function enableLoggingCallback( user )
+   if (user) then
+      --response = json.decode(user.response)
+      if user.enableLogging == "true" then
+         bgServices.startLocationService()
+         if user.userMessage ~= nil and user.userMessage ~= "" and ShowedFirstLoad==nil then
+            
+            alert:show({message = user.userMessage,
+                  buttons={SceneManager.getRosettaString("ok")}})
+            
+         end
+      else
+         --local alert = native.showAlert( "Corona", response.enableLogging , { "OK"}, onComplete )
+         
+      end 
+   end  
+   composer.hideOverlay()
+end
+
+function checkLogging()
+   api.checkLogging({sid=SceneManager.getUserSID(),callback=enableLoggingCallback})
+end
+bgServices.EnableLoggingCall = checkLogging
+
+
+local function LogInstallCallBack(response)
+  print('callback')
+end
+local function FirstLoadAlertCallBack(event)
+   api.LogInstall({sid=SceneManager.getUserSID(),callback=LogInstallCallBack})
+end
 local function apiLoadsCallback(response)
   
    if (response == nil or response.user == nil) then
@@ -1386,16 +1425,20 @@ local function apiLoadsCallback(response)
           alert:show({title = "Welcome",buttonAlign="horizontal",
           message = SceneManager.getRosettaString("DRIVER_FIRSTLOAD_LOAD"),
           buttons={SceneManager.getRosettaString("ok")},
-          callback=alertDismiss})
+          callback=FirstLoadAlertCallBack})
       else
          showingAlert = true
           alert:show({title = "Welcome",buttonAlign="horizontal",
           message = SceneManager.getRosettaString("DRIVER_FIRSTLOAD_NOLOAD"),
           buttons={SceneManager.getRosettaString("ok")},
-          callback=alertDismiss})
+          callback=FirstLoadAlertCallBack})
       end
+      
+      ShowedFirstLoad = true
    end
    gettingloads = false
+   checkLogging()
+   composer.hideOverlay()
 end
 local function getLoads()
    if(gettingloads ~= true) then
@@ -1408,6 +1451,8 @@ end
 
 
 local function addDriverContent()
+   
+
    local idx = getNextElement()
 
    elements[idx] = display.newRoundedRect( 0, 0, display.contentWidth-22, 50 ,8 )
@@ -1682,19 +1727,23 @@ function scene:create( event )
 
 end
 
+
+
+
 function scene:show( event )
 
    local sceneGroup = self.view
    local phase = event.phase
 
    if ( phase == "will" ) then
+      
    elseif ( phase == "did" ) then
       updateBadges()
+      
       _G.appExit = true
-
-
       
    end
+   
 end
 
 function scene:hide( event )
@@ -1712,6 +1761,7 @@ end
 
 function scene:update()
    updateBadges()
+
 end
 
 -- Called prior to the removal of scene's "view" (display group)

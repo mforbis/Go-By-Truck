@@ -373,7 +373,7 @@ function scene:create( event )
    userName = SceneManager.getUserID()
    password = ""
 
-   bg = display.newImageRect(sceneGroup,"graphics/bg.png",display.contentWidth,display.contentHeight)
+   bg = display.newImageRect(sceneGroup,"graphics/bg_truck.png",display.contentWidth,display.contentHeight)
    bg.x, bg.y = display.contentCenterX, display.contentCenterY
 
    logotag = display.newImageRect(sceneGroup,"graphics/logo_tag.png",256, 88 )
@@ -395,7 +395,7 @@ function scene:create( event )
    
    bg:addEventListener( "touch", bg )
 
-   bgUser = display.newRoundedRect( sceneGroup,0, 0, INPUT_WIDTH, INPUT_HEIGHT + 10,8 )
+   bgUser = display.newRoundedRect( sceneGroup,0, 0, INPUT_WIDTH, INPUT_HEIGHT + 10,GC.INPUT_ROUNDED_CORNER )
    bgUser:setFillColor(unpack(GC.INPUT_FIELD_BG_COLOR))
    bgUser.strokeWidth = GC.INPUT_FIELD_BORDER_WIDTH
    bgUser:setStrokeColor(unpack(GC.INPUT_FIELD_BORDER_COLOR))
@@ -415,7 +415,7 @@ function scene:create( event )
    sceneGroup:insert(tfUser)
    tfUser.x, tfUser.y = bgUser.x, bgUser.y
 
-   bgPass = display.newRoundedRect( sceneGroup,0, 0, INPUT_WIDTH, INPUT_HEIGHT + 10,8 )
+   bgPass = display.newRoundedRect( sceneGroup,0, 0, INPUT_WIDTH, INPUT_HEIGHT + 10,GC.INPUT_ROUNDED_CORNER )
    bgPass:setFillColor(unpack(GC.INPUT_FIELD_BG_COLOR))
    bgPass.strokeWidth = GC.INPUT_FIELD_BORDER_WIDTH
    bgPass:setStrokeColor(unpack(GC.INPUT_FIELD_BORDER_COLOR))
@@ -438,7 +438,7 @@ function scene:create( event )
    
    btnSignup = widget.newButton{
       id = "signup",
-      defaultColor = GC.MEDIUM_GRAY3,
+      defaultColor = GC.GREY_BUTTON,
       overColor = GC.BUTTON_ACTION_BACKGROUND_COLOR_OVER,
       font = GC.BUTTON_FONT,
       fontSize = GC.BUTTON_FONT_SIZE,
@@ -447,7 +447,7 @@ function scene:create( event )
       width = INPUT_WIDTH * 0.5 - 5,
       height = INPUT_FIELD_TEXT_SIZE,
       cornerRadius = GC.BUTTON_ACTION_RADIUS_SIZE,
-      strokeColor = GC.BUTTON_ACTION_BORDER_COLOR,
+      strokeColor = GC.GREY_BUTTON_BORDER,
       strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
       onRelease = onEventCallback
    }
@@ -479,6 +479,8 @@ function scene:create( event )
    checkbox = display.newRect( sceneGroup, 0, 0, BOX_SIZE, BOX_SIZE )
    checkbox.strokeWidth = 1
    checkbox:setStrokeColor(unpack(GC.INPUT_FIELD_BORDER_COLOR))
+   checkbox:setFillColor(unpack(GC.INPUT_FIELD_BG_COLOR))
+   checkbox.alpha = .5
    checkbox.x, checkbox.y = bgPass.stageBounds.xMin + checkbox.width * 0.5, btnLogin.stageBounds.yMax + checkbox.height * 0.5 + 10
    checkbox:addEventListener("tap", toggleAutomatic)
 

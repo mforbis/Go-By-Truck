@@ -46,7 +46,7 @@
 	"username_hint":"User Name",
 	"password_hint":"Password",
 	"automatic_login":"Log me in automatically",
-	"login":"Log In",
+	"login":"log In",
 	"signup":"sign up",
 	"shipper_registration":"Shipper Registration",
 	"fields_not_set_title":"Missing Field(s)",

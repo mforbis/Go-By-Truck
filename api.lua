@@ -562,6 +562,20 @@ function DriverLoadCount(params)
 	
 end
 
+function checkLogging(params)
+	setCallback(params.callback)
+	local queryString = nil
+	queryString = "sid="..params.sid
+	sendNetworkRequest("enableLogging?"..queryString)	
+end
+
+function LogInstall(params)
+	setCallback(params.callback)
+	local queryString = nil
+	queryString = "sid="..params.sid
+	sendNetworkRequest("installed?"..queryString)	
+end
+
 function checkSessionId(params)
 	setCallback(params.callback)
 
