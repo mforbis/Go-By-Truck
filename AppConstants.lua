@@ -4,7 +4,7 @@ module(..., package.seeall)
 ---------- MAIN APPLICATION CONFIG --------------
 -------------------------------------------------
 APP_FONT = "Open Sans Light" --native.systemFontBold
-IS_DEV = true
+IS_DEV = false
 SHOW_SPLASH_MS = 3000
 
 local port = 8443
