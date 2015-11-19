@@ -91,7 +91,6 @@ local menuSelected = nil
 
 
 
-
 local function getElementById(id)
    local index = nil
 
@@ -104,6 +103,19 @@ local function getElementById(id)
    end
 
    return nil
+end
+
+local function SetLocatingLabelActive()
+   --getElementById("LocationAlert"):setFillColor(unpack(GC.ORANGE2))      
+   --getElementById("LocationAlert"):setStrokeColor(unpack(GC.BUTTON_ACTION_BORDER_COLOR)) 
+   getElementById("LocationAlert"):setFrame(2)
+   --getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_ACTIVE")
+end
+local function SetLocatingLabelInActive()
+   --getElementById("LocationAlert"):setFillColor(unpack(GC.MEDIUM_GRAY3))
+   --getElementById("LocationAlert"):setStrokeColor(unpack(GC.GREY_BUTTON_BORDER))
+   getElementById("LocationAlert"):setFrame(1)
+   --getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_INACTIVE")
 end
 
 local function showStatus(text_id)
@@ -134,12 +146,10 @@ local function updateLocationStatus()
       overColor = GC.ORANGE_OVER
       borderColor = GC.ORANGE_OVER
       bgServices.startLocationService()
-      getElementById("LocationAlert").setFillColor(unpack(GC.ORANGE2))
-      getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_ACTIVE")
+      SetLocatingLabelActive()
    else
       bgServices.stopLocationService()
-      getElementById("LocationAlert").setFillColor(unpack(GC.MEDIUM_GRAY3))
-      getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_INACTIVE")
+      SetLocatingLabelInActive()
    end
    
    primaryButtons[2]:setDefaultColor(color)
@@ -169,28 +179,25 @@ local function toggleLocationState()
 
    if (SceneManager.getLocationState()) then
       bgServices.startLocationService()
-      getElementById("LocationAlert"):setFillColor(unpack(GC.ORANGE2))
-      getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_ACTIVE")
+      SetLocatingLabelActive()
    else
       bgServices.stopLocationService()
-      getElementById("LocationAlert"):setFillColor(unpack(GC.MEDIUM_GRAY3))
-      getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_INACTIVE")
+      SetLocatingLabelInActive()
    end
 end
 
 local function LocationOffCallback()
    SceneManager.setLocationState(false)
    getElementById("send_location").setState(SceneManager.getLocationState())
-   getElementById("LocationAlert"):setFillColor(unpack(GC.MEDIUM_GRAY3))
-   getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_INACTIVE")
+  SetLocatingLabelInActive()
   
 end
 
 local function LocationOnCallback()
    SceneManager.setLocationState(true)
    getElementById("send_location").setState(SceneManager.getLocationState())
-   getElementById("LocationAlert"):setFillColor(unpack(GC.ORANGE2))
-   getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_ACTIVE")
+   
+   SetLocatingLabelActive()
   
 end
 
@@ -1447,40 +1454,73 @@ local function getLoads()
    end 
 end
 
-
-
-
 local function addDriverContent()
    
 
    local idx = getNextElement()
 
-   elements[idx] = display.newRoundedRect( 0, 0, display.contentWidth-22, 50 ,8 )
-   elements[idx].id = "LocationAlert"
-   elements[idx]:setFillColor(unpack(GC.MEDIUM_GRAY3))
-   elements[idx].strokeWidth = GC.INPUT_FIELD_BORDER_WIDTH
-   elements[idx]:setStrokeColor(unpack(GC.INPUT_FIELD_BORDER_COLOR))
-   elements[idx].x, elements[idx].y = display.contentCenterX, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING
+   local opt = {
+      width = 148,
+      height = 22,
+      numFrames = 2,
+      sheetContentWidth = 148,
+      sheetContentHeight = 44
+   }
+   local locationSheet = graphics.newImageSheet( "graphics/locating-sprite.png", opt )
+
+   local sequenceData = {
+      name = "status",
+      start = 1,
+      count = 2,
+   }
+
+   elements[idx] = display.newRect(0,0,scrollView.innerWidth,40)
+   elements[idx].id = "LocationAlertBG"
+   elements[idx]:setFillColor(1,1,1)
+    elements[idx].x, elements[idx].y = display.contentCenterX, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING
    scrollView:insert(elements[idx])
 
-   idx = getNextElement()
-   elements[idx] = display.newText({
-      text = SceneManager.getRosettaString("LOCATION_INACTIVE"),
-      width = 400,
-      fontSize =  GC.BUTTON_FONT_SIZE,
-      align = "center",
-      font = GC.BUTTON_FONT
-   })
-   elements[idx].id = "txtLocationAlert"
-   elements[idx].x, elements[idx].y = display.contentCenterX, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING + 5
+
+   elements[idx] = display.newSprite( locationSheet, sequenceData )
+   elements[idx].id = "LocationAlert"
+   elements[idx]:setSequence( "status" )
+   elements[idx].currentBall = 1
+   elements[idx]:setFrame( elements[idx].currentBall )
+   elements[idx].height = 22
+   elements[idx].width=148
+   elements[idx].x = display.contentCenterX
+   elements[idx].y = getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING + 10
    scrollView:insert(elements[idx])
+
    setCurrentScrollPosition()
+
+   --elements[idx] = display.newRoundedRect( 0, 0, display.contentWidth-22, 50 , GC.INPUT_ROUNDED_CORNER )
+   --elements[idx].id = "LocationAlert"
+   --elements[idx]:setFillColor(unpack(GC.MEDIUM_GRAY3))
+   --elements[idx].strokeWidth = GC.INPUT_FIELD_BORDER_WIDTH
+   --elements[idx]:setStrokeColor(unpack(GC.INPUT_FIELD_BORDER_COLOR))
+   --elements[idx].x, elements[idx].y = display.contentCenterX, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING
+   --scrollView:insert(elements[idx])
+
+   --idx = getNextElement()
+   --elements[idx] = display.newText({
+   --   text = SceneManager.getRosettaString("LOCATION_INACTIVE"),
+   --   width = 400,
+   --   fontSize =  GC.BUTTON_FONT_SIZE,
+   --   align = "center",
+   --   font = GC.BUTTON_FONT
+   --})
+   --elements[idx].id = "txtLocationAlert"
+   --elements[idx].x, elements[idx].y = display.contentCenterX, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING + 5
+   --elements[idx].font = GC.BUTTON_FONT
+   --scrollView:insert(elements[idx])
+   --setCurrentScrollPosition()
 
    idx = getNextElement()
    elements[idx] = display.newRect(0,0,scrollView.innerWidth,100)
    elements[idx].id = "your_alerts"
    elements[idx]:setFillColor(1,1,1)
-   elements[idx].x, elements[idx].y = scrollView.x, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING - 10
+   elements[idx].x, elements[idx].y = scrollView.x, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING 
    scrollView:insert(elements[idx])
 
    idx = getNextElement()
@@ -1622,8 +1662,7 @@ local function addDriverContent()
    
 
    if(SceneManager.getLocationState()) then
-      getElementById("LocationAlert"):setFillColor(unpack(GC.ORANGE2))
-      getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_ACTIVE")
+      SetLocatingLabelActive()
    end
 
    getLoads()

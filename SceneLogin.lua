@@ -18,7 +18,7 @@ local HIDDEN_PASSWORD_TEXT = "SOMEVALUETOSHOW"
 
 local INPUT_WIDTH = 280
 local INPUT_HEIGHT = 30
-local BOX_SIZE = 25
+local BOX_SIZE = 20
 
 local showingAlert = false
 local bg = nil
@@ -476,7 +476,7 @@ function scene:create( event )
 
    sceneGroup:insert(btnLogin)
 
-   checkbox = display.newRect( sceneGroup, 0, 0, BOX_SIZE, BOX_SIZE )
+   checkbox = display.newRoundedRect( sceneGroup, 0, 0, BOX_SIZE, BOX_SIZE,0 )
    checkbox.strokeWidth = 1
    checkbox:setStrokeColor(unpack(GC.INPUT_FIELD_BORDER_COLOR))
    checkbox:setFillColor(unpack(GC.INPUT_FIELD_BG_COLOR))

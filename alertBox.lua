@@ -1,5 +1,6 @@
 local widget = require("widget-v1")
 local newWidget = require("widget") -- For listview
+local GC = require("AppConstants")
 --[[
 Bugs:
 
@@ -55,12 +56,14 @@ local BUTTON_ACTION_TEXT_COLOR = {1,1,1}
 local BUTTON_ACTION_TEXT_COLOR_OVER = {1,1,1}
 local BUTTON_ACTION_BACKGROUND_COLOR = ORANGE
 local BUTTON_ACTION_BACKGROUND_COLOR_OVER = ORANGE_OVER
-local BUTTON_ACTION_BORDER_COLOR = ORANGE
-local BUTTON_ACTION_RADIUS_SIZE = 0
+local BUTTON_ACTION_BORDER_COLOR = GC.BUTTON_ACTION_BORDER_COLOR
+local BUTTON_ACTION_RADIUS_SIZE = 5
 local BUTTON_ACTION_BORDER_WIDTH = 1
 local BUTTON_CANCEL_TEXT_COLOR = {60/255,60/255,59/255}
 local BUTTON_CANCEL_TEXT_COLOR_OVER = {1,1,1}
 local BUTTON_CANCEL_BORDER_COLOR = {0.4,0.4,0.4}
+
+
 
 local LISTVIEW_ROW_HEIGHT = 50
 local LISTVIEW_MINIMUM_ROWS = 3 -- Anything less then lock scrolling and adjust height
@@ -124,7 +127,7 @@ function alertBox:show(params)
 	self.overlay:setFillColor(0,0,0,0.5)
 	self.overlay.x, self.overlay.y = self.x, self.y
 
-	self.bg = display.newRect(self,0,0,width,480)
+	self.bg = display.newRoundedRect(self,0,0,width,480,5)
 	self.bg:setFillColor(unpack(params.bgColor or DEFAULT_BG_COLOR))
 	self.bg.strokeWidth = strokeWidth
 	self.bg:setStrokeColor(unpack(params.strokeColor or DEFAULT_STROKE_COLOR))
@@ -137,7 +140,7 @@ function alertBox:show(params)
 	end
 
 	if (params.title) then
-		self.titleBG = display.newRect( self, 0, 0, self.bg.width - strokeWidth, params.titleHeight or 40)
+		self.titleBG = display.newRoundedRect( self, 0, 0, self.bg.width - strokeWidth, params.titleHeight or 40,5)
 		self.titleBG:setFillColor(unpack(params.titleBGColor or DEFAULT_TITLE_BGCOLOR))
 		self.titleBG.x, self.titleBG.y = self.x,self.bg.stageBounds.yMin + self.titleBG.height * 0.5 + strokeWidth * 0.5
 		self.title = display.newText(self, params.title, 0,0,font, params.size or 18)
