@@ -19,7 +19,7 @@ settings =
 	},
 	android =
 	{
-		versionCode = "2000000",
+		versionCode = "3000000",
 		installLocation="preferExternal",
 		permissions =
 		{
@@ -99,7 +99,7 @@ settings =
 	        UIPrerenderedIcon = true,
 	        CFBundleDisplayName="Go By Truck",
 	        CFBundleIdentifier="com.gobytruck.gobytruck",
-	        CFBundleVersion="2.1"
+	        CFBundleVersion="3"
 	            
 	    },
 	},
