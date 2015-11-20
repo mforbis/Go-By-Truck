@@ -423,7 +423,6 @@ function scene:create( event )
       onRelease = onEventCallback
    }
    btnSignup.x, btnSignup.y =  bgPhone.stageBounds.xMin + btnSignup.width * 0.5, bgPhone.stageBounds.yMax + btnSignup.height + 50
-   btnSignup.x, btnSignup.y =  bgPhone.stageBounds.xMin + btnSignup.width * 0.5, bgPhone.stageBounds.yMax + btnSignup.height + 50
    sceneGroup:insert(btnSignup)
 
 
