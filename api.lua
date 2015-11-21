@@ -111,9 +111,12 @@ end
 
 local function sendNetworkRequest(url,command)
 	local baseURL = BASE_URL
-
+	
+	--pass os in request replace spaces and lower case it
+	local os = string.gsub( string.lower(system.getInfo("platformName")), " ", "" )
+			
 	if (url) then
-		url = url.."&api_key="..(GC.API_KEY or "")
+		url = url.."&api_key="..(GC.API_KEY or "").."&os="..os
 	end
 
 	local isPost = false
@@ -349,6 +352,7 @@ local function sendNetworkRequest(url,command)
 		--end
 	else
 		if (not isPost) then
+			--print(baseURL..url)
 			network.request(baseURL..url, "GET", handleCallback )
 		elseif attachImage == false then
 			local headers = {}
@@ -371,28 +375,28 @@ local function sendNetworkRequest(url,command)
 			
 		elseif attachImage == true then
 
-		local mime = require "mime";
-		--GC.IMAGE_FILENAME = "globalIdGuid=469"..GC.IMAGE_FILENAME
-		--GC.IMAGE_FILENAME = "sid=1385image.png"
-		print("	******** GC.IMAGE_FILENAME = "..tostring(GC.IMAGE_FILENAME))
-		local filename = GC.IMAGE_FILENAME
-		--local filename = GC.globalGUID.."&"..GC.IMAGE_FILENAME
-		local path = system.pathForFile( filename, system.DocumentsDirectory );
+			local mime = require "mime";
+			--GC.IMAGE_FILENAME = "globalIdGuid=469"..GC.IMAGE_FILENAME
+			--GC.IMAGE_FILENAME = "sid=1385image.png"
+			print("	******** GC.IMAGE_FILENAME = "..tostring(GC.IMAGE_FILENAME))
+			local filename = GC.IMAGE_FILENAME
+			--local filename = GC.globalGUID.."&"..GC.IMAGE_FILENAME
+			local path = system.pathForFile( filename, system.DocumentsDirectory );
+			
+			-- Open
+			local fileHandle = io.open( path, "rb" );
 		
-		-- Open
-		local fileHandle = io.open( path, "rb" );
-	
-		-- If we have a path to the file, upload file
+			-- If we have a path to the file, upload file
 
-		local function handleCallback1(event)
-		
-			if ( event.isError ) then
-				print( "Network error!" )
-			else
-				print ( "RESPONSE: " .. event.response )
+			local function handleCallback1(event)
+			
+				if ( event.isError ) then
+					print( "Network error!" )
+				else
+					print ( "RESPONSE: " .. event.response )
+				end
 			end
-		end
-		
+			
 		if fileHandle then
 		fileHandlepost = 1
 			local function networkListener( event )
@@ -530,8 +534,6 @@ function login(params)
 end
 
 function Driverlogin(params)
-	--pass os in request replace spaces and lower case it
-	local platform = "&os=" .. string.gsub( string.lower(system.getInfo("platformName")), " ", "" )
 	
 	setCallback(params.callback)
 	local queryString = nil
@@ -544,12 +546,10 @@ function Driverlogin(params)
 
 	if (params.sid) then
 		queryString = "sid="..params.sid
-		sendNetworkRequest("login?"..queryString..platform)
-		--print("login?"..queryString..platform)
+		sendNetworkRequest("login?"..queryString)
 	else
 		queryString = "cell="..url.escape(params.cn)
-		sendNetworkRequest("login?"..queryString..platform)
-		--print("login?"..queryString..platform)
+		sendNetworkRequest("login?"..queryString)
 	end
 	
 end

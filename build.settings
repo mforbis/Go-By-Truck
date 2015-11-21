@@ -40,7 +40,7 @@ settings =
 		intentFilters =
 		{
 			{
-				label = "Go By Truck",
+				label = "GBT",
 				actions = { "android.intent.action.VIEW" },
 				categories =
 				{
@@ -97,7 +97,7 @@ settings =
 			},
 			
 	        UIPrerenderedIcon = true,
-	        CFBundleDisplayName="Go By Truck",
+	        CFBundleDisplayName="GBT",
 	        CFBundleIdentifier="com.gobytruck.gobytruck",
 	        CFBundleVersion="3"
 	            
