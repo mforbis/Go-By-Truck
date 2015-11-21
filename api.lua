@@ -530,6 +530,9 @@ function login(params)
 end
 
 function Driverlogin(params)
+	--pass os in request replace spaces and lower case it
+	local platform = "&os=" .. string.gsub( string.lower(system.getInfo("platformName")), " ", "" )
+	
 	setCallback(params.callback)
 	local queryString = nil
 	-- TODO: This should be some kind of global
@@ -541,10 +544,12 @@ function Driverlogin(params)
 
 	if (params.sid) then
 		queryString = "sid="..params.sid
-		sendNetworkRequest("login?"..queryString)
+		sendNetworkRequest("login?"..queryString..platform)
+		--print("login?"..queryString..platform)
 	else
 		queryString = "cell="..url.escape(params.cn)
-		sendNetworkRequest("login?"..queryString)
+		sendNetworkRequest("login?"..queryString..platform)
+		--print("login?"..queryString..platform)
 	end
 	
 end
