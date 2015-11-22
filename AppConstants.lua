@@ -19,9 +19,9 @@ else
 end
 -- iTunes App Id for rating and such
 APP_ID ="817786975"
-APP_NAME ="Go By Truck"
+APP_NAME ="GBT"
 NOOK_APP_EAN =""
-APP_VERSION = "1.0"
+APP_VERSION = "2.2"
 
 -- Colors
 DARK_GREEN = {81/255,122/255,1/255}
