@@ -19,7 +19,7 @@ settings =
 	},
 	android =
 	{
-		versionCode = "2200000",
+		versionCode = "2210000",
 		installLocation="preferExternal",
 		permissions =
 		{
@@ -100,7 +100,7 @@ settings =
 	        CFBundleDisplayName="GBT",
 	        CFBundleName="GBT",
 	        CFBundleIdentifier="com.gobytruck.gobytruck",
-	        CFBundleVersion="2.2"
+	        CFBundleVersion="2.2.1"
 	            
 	    },
 	},
