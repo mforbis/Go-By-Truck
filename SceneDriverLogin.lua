@@ -442,9 +442,6 @@ function scene:create( event )
       onRelease = onEventCallback
    }
    btnLogin.x, btnLogin.y =  btnSignup.x + btnSignup.width + 10, btnSignup.y
-
-   
-
    sceneGroup:insert(btnLogin)
 
    checkbox = display.newRoundedRect( sceneGroup, 0, 0, BOX_SIZE, BOX_SIZE,0)
