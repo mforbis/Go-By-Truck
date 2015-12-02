@@ -300,8 +300,27 @@ local function inputListener( event )
    end
    
    if event.phase == "began" then
+      if (event.target.id == "password") then
+         if tfPass.text == GC.PASSWORD_PLACEHOLDER then
+            tfPass.isSecure = true
+            tfPass.text = ""
+         end
+      else
+         if tfUser.text == GC.USERNAME_PLACEHOLDER then
+            tfUser.text = ""
+         end
+      end
    elseif event.phase == "ended" then
-      
+      if (event.target.id == "password") then
+         if tfPass.text == "" then
+            tfPass.isSecure = false
+            tfPass.text = GC.PASSWORD_PLACEHOLDER
+         end
+      else
+         if tfUser.text == "" then
+            tfUser.text = GC.USERNAME_PLACEHOLDER
+         end
+      end
    elseif event.phase == "submitted" then
       native.setKeyboardFocus( nil )
       if (event.target.id == "password") then
@@ -410,8 +429,12 @@ function scene:create( event )
    tfUser:setTextColor(unpack(GC.INPUT_FIELD_TEXT_COLOR))
    tfUser:addEventListener( "userInput", inputListener )
    tfUser.hasBackground = false
-   tfUser.text = userName
-   tfUser.placeholder = "User Name"
+   if userName == "" then
+      tfUser.text = GC.USERNAME_PLACEHOLDER
+   else
+      tfUser.text = userName
+   end
+   --tfUser.placeholder = "User Name"
    sceneGroup:insert(tfUser)
    tfUser.x, tfUser.y = bgUser.x, bgUser.y
 
@@ -426,13 +449,14 @@ function scene:create( event )
    tfPass:setReturnKey( "go" )
    tfPass.id = "password"
    tfPass.inputType = "default"
-   tfPass.isSecure = true
+   --tfPass.isSecure = true
    tfPass.align = "left"
    tfPass.size = GC.INPUT_FIELD_TEXT_SIZE
    tfPass:addEventListener( "userInput", inputListener )
    tfPass:setTextColor(unpack(GC.INPUT_FIELD_TEXT_COLOR))
    tfPass.hasBackground = false
-   tfPass.placeholder = "Password"
+   tfPass.text = GC.PASSWORD_PLACEHOLDER
+   --tfPass.placeholder = "Password"
    sceneGroup:insert(tfPass)
    tfPass.x, tfPass.y = bgPass.x, bgPass.y
    

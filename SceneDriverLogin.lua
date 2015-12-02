@@ -294,8 +294,17 @@ local function inputListener( event )
    end
    
    if event.phase == "began" then
+      if (event.target.id == "user") then
+         if tfPhone.text == GC.PHONE_PLACEHOLDER then
+            tfPhone.text = ""
+         end
+      end
    elseif event.phase == "ended" then
-      
+      if (event.target.id == "user") then
+         if tfPhone.text == "" then
+            tfPhone.text = GC.PHONE_PLACEHOLDER
+         end
+      end
    elseif event.phase == "submitted" then
       native.setKeyboardFocus( nil )
       handleLogin()
@@ -400,8 +409,13 @@ function scene:create( event )
    tfPhone:addEventListener( "userInput", inputListener )
    tfPhone.hasBackground = false
    tfPhone.text = userName
-   tfPhone.placeholder = "Enter Phone Number"
+   --tfPhone.placeholder = "Enter Phone Number"
    tfPhone.inputType = "phone"
+   if userName == "" then
+      tfPhone.text = GC.PHONE_PLACEHOLDER
+   else
+      tfPhone.text = userName
+   end
    sceneGroup:insert(tfPhone)
    tfPhone.x, tfPhone.y = bgPhone.x, bgPhone.y
 

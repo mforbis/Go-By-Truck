@@ -334,3 +334,7 @@ else
 	MUSIC_EXT =".caf"
 	IMAGE_EXT =""
 end
+
+USERNAME_PLACEHOLDER = "User Name"
+PASSWORD_PLACEHOLDER = "Password"
+PHONE_PLACEHOLDER = "Enter Phone Number"
