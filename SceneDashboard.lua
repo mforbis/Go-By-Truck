@@ -308,15 +308,15 @@ optionOnComplete = function( event,value )
    if (event.phase == "release") then
       if (i == "my_trailers") then
          SceneManager.goToMyTrailers()
-      elseif (i == "my_quotes") then
+      elseif (i == "my_quotes" or i == "my_quotes_behind") then
          SceneManager.goToMyQuotes()
          --SceneManager.goTo("my_quotes",nil,false,nil)
-      elseif (i == "my_shipments") then
+      elseif (i == "my_shipments" or i == "my_shipments_behind") then
          SceneManager.goToMyShipments()
          --SceneManager.goTo("my_shipments",nil,false,nil)
       elseif (i == "feedback") then
          SceneManager.goToMyFeedback()
-      elseif (i == "gbt_bank") then
+      elseif (i == "gbt_bank" or i == "gbt_bank_behind") then
          --SceneManager.goToMyBanking()
          -- Only these masterRoles can access bank. Not sure why client doesn't want to hide button instead
          local canAccess = false
@@ -337,11 +337,11 @@ optionOnComplete = function( event,value )
          handleLogout()
       elseif (i == "locate_shipment") then
          SceneManager.goToLocateShipment()
-      elseif (i == "message_center") then
+      elseif (i == "message_center" or i == "message_center_behind") then
          SceneManager.goToMessageCenter()
       elseif (i == "locate_drivers") then
          SceneManager.goToLocateDrivers()
-      elseif (i == "my_loads") then
+      elseif (i == "my_loads" or i =="my_loads_behind") then
          SceneManager.goToMyShipments()
       elseif (i == "send_location") then
          toggleLocationState()
@@ -427,6 +427,8 @@ local function updateBadge(badge)
    
    if (badge.id == "messages") then
       count = messageCounts.totalCount
+   elseif (badge.id == "my_loads") then
+      count = loadcount;
    elseif (badge.id == "quote_activity") then
       count = messageCounts[GC.MESSAGE_TYPE_QUOTE]
    elseif (badge.id == "shipment_activity") then
@@ -913,6 +915,21 @@ local function addShipperContent()
 
    setCurrentScrollPosition()
 
+
+   idx = getNextElement()
+
+   elements[idx] = widget.newButton{
+      id = "my_quotes_behind",
+      width = scrollView.innerWidth/2,
+      height = 70,
+      cornerRadius = 0,
+      strokeWidth = 0,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMin + scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+   scrollView:insert(elements[idx])
+
    idx = getNextElement()
 
    elements[idx] = widget.newButton{
@@ -936,6 +953,21 @@ local function addShipperContent()
 
    addBadge(0,"quote_activity",nil,scrollView.midX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
+
+   idx = getNextElement()
+
+   elements[idx] = widget.newButton{
+      id = "my_shipments_behind",
+      width = scrollView.innerWidth/2,
+      height = 70,
+      cornerRadius = 0,
+      strokeWidth = 0,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+   scrollView:insert(elements[idx])
+
    idx = getNextElement()
 
    elements[idx] = widget.newButton{
@@ -955,7 +987,7 @@ local function addShipperContent()
    }
    scrollView:insert(elements[idx])
 
-   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, elements[idx-1].y
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, elements[idx-2].y
 
    addBadge(0,"shipment_activity",nil,scrollView.maxX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
@@ -971,6 +1003,20 @@ local function addShipperContent()
    local dividerY = elements[idx].y
 
    setCurrentScrollPosition()
+
+   idx = getNextElement()
+
+   elements[idx] = widget.newButton{
+      id = "message_center_behind",
+      width = scrollView.innerWidth/2,
+      height = 70,
+      cornerRadius = 0,
+      strokeWidth = 0,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMin + scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+   scrollView:insert(elements[idx])
 
    idx = getNextElement()
 
@@ -995,6 +1041,22 @@ local function addShipperContent()
 
    addBadge(0,"messages",nil,scrollView.midX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
+
+   idx = getNextElement()
+
+   elements[idx] = widget.newButton{
+      id = "gbt_bank_behind",
+      width = scrollView.innerWidth/2,
+      height = 70,
+      cornerRadius = 0,
+      strokeWidth = 0,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+   scrollView:insert(elements[idx])
+
+
    idx = getNextElement()
 
    elements[idx] = widget.newButton{
@@ -1014,7 +1076,7 @@ local function addShipperContent()
    }
    scrollView:insert(elements[idx])
 
-   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, elements[idx-1].y
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, elements[idx-2].y
 
    addBadge(0,"gbt_bank",nil,scrollView.maxX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
@@ -1194,6 +1256,22 @@ local function addCarrierContent()
 
    setCurrentScrollPosition()
 
+
+   idx = getNextElement()
+
+   elements[idx] = widget.newButton{
+      id = "my_quotes_behind",
+      width = scrollView.innerWidth/2,
+      height = 70,
+      cornerRadius = 0,
+      strokeWidth = 0,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMin + scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+   scrollView:insert(elements[idx])
+
+
    idx = getNextElement()
 
    elements[idx] = widget.newButton{
@@ -1217,6 +1295,21 @@ local function addCarrierContent()
 
    addBadge(0,"quote_activity",nil,scrollView.midX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
+
+   idx = getNextElement()
+
+   elements[idx] = widget.newButton{
+      id = "my_shipments_behind",
+      width = scrollView.innerWidth/2,
+      height = 70,
+      cornerRadius = 0,
+      strokeWidth = 0,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+   
+
    idx = getNextElement()
 
    elements[idx] = widget.newButton{
@@ -1236,7 +1329,7 @@ local function addCarrierContent()
    }
    scrollView:insert(elements[idx])
 
-   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, elements[idx-1].y
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, elements[idx-2].y
 
    addBadge(0,"shipment_activity",nil,scrollView.maxX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
@@ -1252,6 +1345,21 @@ local function addCarrierContent()
    local dividerY = elements[idx].y
 
    setCurrentScrollPosition()
+
+   idx = getNextElement()
+
+   elements[idx] = widget.newButton{
+      id = "message_center_behind",
+      width = scrollView.innerWidth/2,
+      height = 70,
+      cornerRadius = 0,
+      strokeWidth = 0,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMin + scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+   
+
 
    idx = getNextElement()
 
@@ -1276,6 +1384,21 @@ local function addCarrierContent()
 
    addBadge(0,"messages",nil,scrollView.midX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
+
+   idx = getNextElement()
+
+   elements[idx] = widget.newButton{
+      id = "gbt_bank_behind",
+      width = scrollView.innerWidth/2,
+      height = 70,
+      cornerRadius = 0,
+      strokeWidth = 0,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+   
+
    idx = getNextElement()
 
    elements[idx] = widget.newButton{
@@ -1295,7 +1418,7 @@ local function addCarrierContent()
    }
    scrollView:insert(elements[idx])
 
-   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, elements[idx-1].y
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, elements[idx-2].y
 
    addBadge(0,"gbt_bank",nil,scrollView.maxX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
@@ -1446,6 +1569,7 @@ local function apiLoadsCallback(response)
    gettingloads = false
    checkLogging()
    composer.hideOverlay()
+   
 end
 local function getLoads()
    if(gettingloads ~= true) then
@@ -1567,6 +1691,18 @@ local function addDriverContent()
    idx = getNextElement()
 
    elements[idx] = widget.newButton{
+      id = "message_center_behind",
+      width = scrollView.innerWidth/2,
+      height = 70,
+      cornerRadius = 0,
+      strokeWidth = 0,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMin + scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+
+   idx = getNextElement()
+   elements[idx] = widget.newButton{
       id = "message_center",
       default = "graphics/mail.png",
       defaultColor = GC.DARK_GRAY,
@@ -1590,6 +1726,20 @@ local function addDriverContent()
    idx = getNextElement()
 
    elements[idx] = widget.newButton{
+      id = "my_loads_behind",
+      width = scrollView.innerWidth/2,
+      height = 70,
+      cornerRadius = 0,
+      strokeWidth = 0,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+
+
+   idx = getNextElement()
+
+   elements[idx] = widget.newButton{
       id = "my_loads",
       default = "graphics/truck.png",
       defaultColor = GC.DARK_GRAY,
@@ -1606,7 +1756,7 @@ local function addDriverContent()
    }
    scrollView:insert(elements[idx])
 
-   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, elements[idx-1].y
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, elements[idx-2].y
 
    addBadge(0,"my_loads",nil,scrollView.maxX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
