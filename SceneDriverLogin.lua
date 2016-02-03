@@ -418,7 +418,6 @@ function scene:create( event )
    end
    sceneGroup:insert(tfPhone)
    tfPhone.x, tfPhone.y = bgPhone.x, bgPhone.y
-
    
    
    -- btnSignup = widget.newButton{
@@ -439,31 +438,11 @@ function scene:create( event )
    -- btnSignup.x, btnSignup.y =  bgPhone.stageBounds.xMin + btnSignup.width * 0.5, bgPhone.stageBounds.yMax + btnSignup.height + 50
    --sceneGroup:insert(btnSignup)
 
-
-   btnLogin = widget.newButton{
-      id = "login",
-      defaultColor = GC.ORANGE2,
-      overColor = GC.BUTTON_ACTION_BACKGROUND_COLOR_OVER,
-      font = GC.BUTTON_FONT,
-      fontSize = GC.BUTTON_FONT_SIZE,
-      label=SceneManager.getRosettaString("login"),
-      labelColor = { default=GC.BUTTON_TEXT_COLOR, over=GC.BUTTON_TEXT_COLOR_OVER },
-      width = INPUT_WIDTH * 0.5 - 5,
-      height = INPUT_FIELD_TEXT_SIZE,
-      cornerRadius = GC.BUTTON_ACTION_RADIUS_SIZE,
-      strokeColor = GC.BUTTON_ACTION_BORDER_COLOR,
-      strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
-      onRelease = onEventCallback
-   }
-   --btnLogin.x, btnLogin.y =  btnSignup.x + btnSignup.width + 10, btnSignup.y
-   btnLogin.x, btnLogin.y =  bgPhone.stageBounds.xMin + btnLogin.width * 0.5, bgPhone.stageBounds.yMax + btnLogin.height + 50
-   sceneGroup:insert(btnLogin)
-
    checkbox = display.newRoundedRect( sceneGroup, 0, 0, BOX_SIZE, BOX_SIZE,0)
    checkbox.strokeWidth = 1
    checkbox:setStrokeColor(unpack(GC.INPUT_FIELD_BORDER_COLOR))
    checkbox:setFillColor(unpack(GC.INPUT_FIELD_BG_COLOR))
-   checkbox.x, checkbox.y = btnLogin.stageBounds.xMin + checkbox.width * 0.5, btnLogin.stageBounds.yMax + checkbox.height * 0.5 + 10
+   checkbox.x, checkbox.y = tfPhone.stageBounds.xMin + (checkbox.width * 0.5), tfPhone.stageBounds.yMax + (checkbox.height * 0.5) + 15
    checkbox:addEventListener("tap", toggleAutomatic)
 
    check = display.newImageRect(sceneGroup, "graphics/check_white.png", BOX_SIZE - 4, BOX_SIZE - 4)
@@ -475,6 +454,27 @@ function scene:create( event )
    lblAutomaticLogin:setFillColor(unpack(GC.HINT_TEXT_COLOR))
    lblAutomaticLogin.anchorX = 0
    lblAutomaticLogin.x, lblAutomaticLogin.y = checkbox.stageBounds.xMax + 10, checkbox.y
+
+
+   btnLogin = widget.newButton{
+      id = "login",
+      defaultColor = GC.ORANGE2,
+      overColor = GC.BUTTON_ACTION_BACKGROUND_COLOR_OVER,
+      font = GC.BUTTON_FONT,
+      fontSize = GC.BUTTON_FONT_SIZE,
+      label=SceneManager.getRosettaString("login"),
+      labelColor = { default=GC.BUTTON_TEXT_COLOR, over=GC.BUTTON_TEXT_COLOR_OVER },
+      width = INPUT_WIDTH * 0.50,
+      height = INPUT_FIELD_TEXT_SIZE,
+      cornerRadius = GC.BUTTON_ACTION_RADIUS_SIZE,
+      strokeColor = GC.BUTTON_ACTION_BORDER_COLOR,
+      strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
+      onRelease = onEventCallback
+   }
+   btnLogin.x, btnLogin.y =  bgPhone.x, lblAutomaticLogin.y + btnLogin.height + 10
+   sceneGroup:insert(btnLogin)
+
+   
 
    if (SceneManager.isAppLoad()) then
       showSplash()

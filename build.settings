@@ -19,7 +19,7 @@ settings =
 	},
 	android =
 	{
-		versionCode = "2230000",
+		versionCode = "2240000",
 		installLocation="preferExternal",
 		permissions =
 		{

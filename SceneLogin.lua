@@ -11,6 +11,7 @@ local utils = require("utils")
 
 -- TODO: Need to handle being sent back here if logged out from the server later in the app
 -- app will return here
+
 local MessageX = display.contentCenterX
 local MessageY = 360
 
@@ -457,8 +458,9 @@ function scene:create( event )
    tfPass.hasBackground = false
    tfPass.text = GC.PASSWORD_PLACEHOLDER
    --tfPass.placeholder = "Password"
-   sceneGroup:insert(tfPass)
    tfPass.x, tfPass.y = bgPass.x, bgPass.y
+   sceneGroup:insert(tfPass)
+   
    
    -- btnSignup = widget.newButton{
    --    id = "signup",
@@ -478,6 +480,23 @@ function scene:create( event )
    -- btnSignup.x, btnSignup.y =  bgPass.stageBounds.xMin + btnSignup.width * 0.5, bgPass.stageBounds.yMax + btnSignup.height + 50
    -- sceneGroup:insert(btnSignup)
 
+   checkbox = display.newRoundedRect( sceneGroup, 0, 0, BOX_SIZE, BOX_SIZE,0 )
+   checkbox.strokeWidth = 1
+   checkbox:setStrokeColor(unpack(GC.INPUT_FIELD_BORDER_COLOR))
+   checkbox:setFillColor(unpack(GC.INPUT_FIELD_BG_COLOR))
+   checkbox.x, checkbox.y = tfPass.stageBounds.xMin + (checkbox.width * 0.5), tfPass.stageBounds.yMax + (checkbox.height * 0.5) + 15
+   checkbox:addEventListener("tap", toggleAutomatic)
+
+   check = display.newImageRect(sceneGroup, "graphics/check_white.png", BOX_SIZE - 4, BOX_SIZE - 4)
+   check:setFillColor(unpack(GC.ORANGE))
+   check.x, check.y = checkbox.x, checkbox.y
+   check.isVisible = hasAutomaticLogin
+
+   lblAutomaticLogin = display.newText(sceneGroup, SceneManager.getRosettaString("automatic_login"), 0, 0, GC.APP_FONT, 20)
+   lblAutomaticLogin:setFillColor(unpack(GC.HINT_TEXT_COLOR))
+   lblAutomaticLogin.anchorX = 0
+   lblAutomaticLogin.x, lblAutomaticLogin.y = checkbox.stageBounds.xMax + 10, checkbox.y
+
 
    btnLogin = widget.newButton{
       id = "login",
@@ -495,29 +514,10 @@ function scene:create( event )
       onRelease = onEventCallback
    }
    --btnLogin.x, btnLogin.y =  btnSignup.x + btnSignup.width + 10, btnSignup.y
-   btnLogin.x, btnLogin.y = bgPass.stageBounds.xMin + btnLogin.width * 0.5, bgPass.stageBounds.yMax + btnLogin.height + 50
-
-   
-
+   btnLogin.x, btnLogin.y = tfPass.x, lblAutomaticLogin.y + btnLogin.height + 10
    sceneGroup:insert(btnLogin)
 
-   checkbox = display.newRoundedRect( sceneGroup, 0, 0, BOX_SIZE, BOX_SIZE,0 )
-   checkbox.strokeWidth = 1
-   checkbox:setStrokeColor(unpack(GC.INPUT_FIELD_BORDER_COLOR))
-   checkbox:setFillColor(unpack(GC.INPUT_FIELD_BG_COLOR))
-   checkbox.alpha = .5
-   checkbox.x, checkbox.y = bgPass.stageBounds.xMin + checkbox.width * 0.5, btnLogin.stageBounds.yMax + checkbox.height * 0.5 + 10
-   checkbox:addEventListener("tap", toggleAutomatic)
-
-   check = display.newImageRect(sceneGroup, "graphics/check_white.png", BOX_SIZE - 4, BOX_SIZE - 4)
-   check:setFillColor(unpack(GC.ORANGE))
-   check.x, check.y = checkbox.x, checkbox.y
-   check.isVisible = hasAutomaticLogin
-
-   lblAutomaticLogin = display.newText(sceneGroup, SceneManager.getRosettaString("automatic_login"), 0, 0, GC.APP_FONT, 20)
-   lblAutomaticLogin:setFillColor(unpack(GC.HINT_TEXT_COLOR))
-   lblAutomaticLogin.anchorX = 0
-   lblAutomaticLogin.x, lblAutomaticLogin.y = checkbox.stageBounds.xMax + 10, checkbox.y
+   
 
    if (SceneManager.isAppLoad()) then
       showSplash()
