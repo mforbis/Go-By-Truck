@@ -460,23 +460,23 @@ function scene:create( event )
    sceneGroup:insert(tfPass)
    tfPass.x, tfPass.y = bgPass.x, bgPass.y
    
-   btnSignup = widget.newButton{
-      id = "signup",
-      defaultColor = GC.GREY_BUTTON,
-      overColor = GC.BUTTON_ACTION_BACKGROUND_COLOR_OVER,
-      font = GC.BUTTON_FONT,
-      fontSize = GC.BUTTON_FONT_SIZE,
-      label=SceneManager.getRosettaString("signup"),
-      labelColor = { default=GC.BUTTON_TEXT_COLOR, over=GC.BUTTON_TEXT_COLOR_OVER },
-      width = INPUT_WIDTH * 0.5 - 5,
-      height = INPUT_FIELD_TEXT_SIZE,
-      cornerRadius = GC.BUTTON_ACTION_RADIUS_SIZE,
-      strokeColor = GC.GREY_BUTTON_BORDER,
-      strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
-      onRelease = onEventCallback
-   }
-   btnSignup.x, btnSignup.y =  bgPass.stageBounds.xMin + btnSignup.width * 0.5, bgPass.stageBounds.yMax + btnSignup.height + 50
-   sceneGroup:insert(btnSignup)
+   -- btnSignup = widget.newButton{
+   --    id = "signup",
+   --    defaultColor = GC.GREY_BUTTON,
+   --    overColor = GC.BUTTON_ACTION_BACKGROUND_COLOR_OVER,
+   --    font = GC.BUTTON_FONT,
+   --    fontSize = GC.BUTTON_FONT_SIZE,
+   --    label=SceneManager.getRosettaString("signup"),
+   --    labelColor = { default=GC.BUTTON_TEXT_COLOR, over=GC.BUTTON_TEXT_COLOR_OVER },
+   --    width = INPUT_WIDTH * 0.5 - 5,
+   --    height = INPUT_FIELD_TEXT_SIZE,
+   --    cornerRadius = GC.BUTTON_ACTION_RADIUS_SIZE,
+   --    strokeColor = GC.GREY_BUTTON_BORDER,
+   --    strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
+   --    onRelease = onEventCallback
+   -- }
+   -- btnSignup.x, btnSignup.y =  bgPass.stageBounds.xMin + btnSignup.width * 0.5, bgPass.stageBounds.yMax + btnSignup.height + 50
+   -- sceneGroup:insert(btnSignup)
 
 
    btnLogin = widget.newButton{
@@ -494,7 +494,8 @@ function scene:create( event )
       strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
       onRelease = onEventCallback
    }
-   btnLogin.x, btnLogin.y =  btnSignup.x + btnSignup.width + 10, btnSignup.y
+   --btnLogin.x, btnLogin.y =  btnSignup.x + btnSignup.width + 10, btnSignup.y
+   btnLogin.x, btnLogin.y = bgPass.stageBounds.xMin + btnLogin.width * 0.5, bgPass.stageBounds.yMax + btnLogin.height + 50
 
    
 

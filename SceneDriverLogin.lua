@@ -421,23 +421,23 @@ function scene:create( event )
 
    
    
-   btnSignup = widget.newButton{
-      id = "signup",
-      defaultColor = GC.GREY_BUTTON,
-      overColor = GC.BUTTON_ACTION_BACKGROUND_COLOR_OVER,
-      font = GC.BUTTON_FONT,
-      fontSize = GC.BUTTON_FONT_SIZE,
-      label=SceneManager.getRosettaString("signup"),
-      labelColor = { default=GC.BUTTON_TEXT_COLOR, over=GC.BUTTON_TEXT_COLOR_OVER },
-      width = INPUT_WIDTH * 0.5 - 5,
-      height = INPUT_FIELD_TEXT_SIZE,
-      cornerRadius = GC.BUTTON_ACTION_RADIUS_SIZE,
-      strokeColor = GC.GREY_BUTTON_BORDER,
-      strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
-      onRelease = onEventCallback
-   }
-   btnSignup.x, btnSignup.y =  bgPhone.stageBounds.xMin + btnSignup.width * 0.5, bgPhone.stageBounds.yMax + btnSignup.height + 50
-   sceneGroup:insert(btnSignup)
+   -- btnSignup = widget.newButton{
+   --    id = "signup",
+   --    defaultColor = GC.GREY_BUTTON,
+   --    overColor = GC.BUTTON_ACTION_BACKGROUND_COLOR_OVER,
+   --    font = GC.BUTTON_FONT,
+   --    fontSize = GC.BUTTON_FONT_SIZE,
+   --    label=SceneManager.getRosettaString("signup"),
+   --    labelColor = { default=GC.BUTTON_TEXT_COLOR, over=GC.BUTTON_TEXT_COLOR_OVER },
+   --    width = INPUT_WIDTH * 0.5 - 5,
+   --    height = INPUT_FIELD_TEXT_SIZE,
+   --    cornerRadius = GC.BUTTON_ACTION_RADIUS_SIZE,
+   --    strokeColor = GC.GREY_BUTTON_BORDER,
+   --    strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
+   --    onRelease = onEventCallback
+   -- }
+   -- btnSignup.x, btnSignup.y =  bgPhone.stageBounds.xMin + btnSignup.width * 0.5, bgPhone.stageBounds.yMax + btnSignup.height + 50
+   --sceneGroup:insert(btnSignup)
 
 
    btnLogin = widget.newButton{
@@ -455,14 +455,15 @@ function scene:create( event )
       strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
       onRelease = onEventCallback
    }
-   btnLogin.x, btnLogin.y =  btnSignup.x + btnSignup.width + 10, btnSignup.y
+   --btnLogin.x, btnLogin.y =  btnSignup.x + btnSignup.width + 10, btnSignup.y
+   btnLogin.x, btnLogin.y =  bgPhone.stageBounds.xMin + btnLogin.width * 0.5, bgPhone.stageBounds.yMax + btnLogin.height + 50
    sceneGroup:insert(btnLogin)
 
    checkbox = display.newRoundedRect( sceneGroup, 0, 0, BOX_SIZE, BOX_SIZE,0)
    checkbox.strokeWidth = 1
    checkbox:setStrokeColor(unpack(GC.INPUT_FIELD_BORDER_COLOR))
    checkbox:setFillColor(unpack(GC.INPUT_FIELD_BG_COLOR))
-   checkbox.x, checkbox.y = btnSignup.stageBounds.xMin + checkbox.width * 0.5, btnLogin.stageBounds.yMax + checkbox.height * 0.5 + 10
+   checkbox.x, checkbox.y = btnLogin.stageBounds.xMin + checkbox.width * 0.5, btnLogin.stageBounds.yMax + checkbox.height * 0.5 + 10
    checkbox:addEventListener("tap", toggleAutomatic)
 
    check = display.newImageRect(sceneGroup, "graphics/check_white.png", BOX_SIZE - 4, BOX_SIZE - 4)
