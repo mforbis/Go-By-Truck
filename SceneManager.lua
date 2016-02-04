@@ -42,7 +42,7 @@ local userFirstname = "Driver"
 local userLastname = "Mobile"
 
 --local WEB_BASE_URL = "https://www.gbthq.com:8443"
-local WEB_BASE_URL = "https://www.gobytruck.com"
+local WEB_BASE_URL = GC.MAIN_URL
 
 local SESSION_TIMEOUT_MS = 6 * 60 * 1000 -- 6 Minutes
 local sessionTimer
