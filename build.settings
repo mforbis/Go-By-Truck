@@ -100,7 +100,7 @@ settings =
 	        CFBundleDisplayName="GBT",
 	        CFBundleName="GBT",
 	        CFBundleIdentifier="com.gobytruck.gobytruck",
-	        CFBundleVersion="2.2.3"
+	        CFBundleVersion="2.2.4"
 	            
 	    },
 	},
