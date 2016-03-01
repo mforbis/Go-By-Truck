@@ -19,7 +19,7 @@ settings =
 	},
 	android =
 	{
-		versionCode = "2000000",
+		versionCode = "2240000",
 		installLocation="preferExternal",
 		permissions =
 		{
@@ -37,13 +37,27 @@ settings =
 			"com.google.android.c2dm.permission.RECEIVE",
 			".permission.C2D_MESSAGE",
 		},
+		intentFilters =
+		{
+			{
+				label = "GBT",
+				actions = { "android.intent.action.VIEW" },
+				categories =
+				{
+					"android.intent.category.DEFAULT",
+					"android.intent.category.BROWSABLE",
+				},
+				data = { scheme = "http", pathPrefix="/app", host="www.gobytruck.com" },
+			},
+		},
 	},
 
 
 	iphone = 
 	{
 	    plist = 
-	    {
+	    {	
+	    	NSAppTransportSecurity = { NSAllowsArbitraryLoads = true },
 	    	CFBundleIconFiles = 
 	    	{
 				"Icon.png",
@@ -83,9 +97,10 @@ settings =
 			},
 			
 	        UIPrerenderedIcon = true,
-	        CFBundleDisplayName="Go By Truck",
+	        CFBundleDisplayName="GBT",
+	        CFBundleName="GBT",
 	        CFBundleIdentifier="com.gobytruck.gobytruck",
-	        CFBundleVersion="2.1"
+	        CFBundleVersion="2.2.5"
 	            
 	    },
 	},

@@ -111,9 +111,12 @@ end
 
 local function sendNetworkRequest(url,command)
 	local baseURL = BASE_URL
-
+	
+	--pass os in request replace spaces and lower case it
+	local os = string.gsub( string.lower(system.getInfo("platformName")), " ", "" )
+			
 	if (url) then
-		url = url.."&api_key="..(GC.API_KEY or "")
+		url = url.."&api_key="..(GC.API_KEY or "").."&os="..os
 	end
 
 	local isPost = false
@@ -349,6 +352,7 @@ local function sendNetworkRequest(url,command)
 		--end
 	else
 		if (not isPost) then
+			--print(baseURL..url)
 			network.request(baseURL..url, "GET", handleCallback )
 		elseif attachImage == false then
 			local headers = {}
@@ -371,28 +375,28 @@ local function sendNetworkRequest(url,command)
 			
 		elseif attachImage == true then
 
-		local mime = require "mime";
-		--GC.IMAGE_FILENAME = "globalIdGuid=469"..GC.IMAGE_FILENAME
-		--GC.IMAGE_FILENAME = "sid=1385image.png"
-		print("	******** GC.IMAGE_FILENAME = "..tostring(GC.IMAGE_FILENAME))
-		local filename = GC.IMAGE_FILENAME
-		--local filename = GC.globalGUID.."&"..GC.IMAGE_FILENAME
-		local path = system.pathForFile( filename, system.DocumentsDirectory );
+			local mime = require "mime";
+			--GC.IMAGE_FILENAME = "globalIdGuid=469"..GC.IMAGE_FILENAME
+			--GC.IMAGE_FILENAME = "sid=1385image.png"
+			print("	******** GC.IMAGE_FILENAME = "..tostring(GC.IMAGE_FILENAME))
+			local filename = GC.IMAGE_FILENAME
+			--local filename = GC.globalGUID.."&"..GC.IMAGE_FILENAME
+			local path = system.pathForFile( filename, system.DocumentsDirectory );
+			
+			-- Open
+			local fileHandle = io.open( path, "rb" );
 		
-		-- Open
-		local fileHandle = io.open( path, "rb" );
-	
-		-- If we have a path to the file, upload file
+			-- If we have a path to the file, upload file
 
-		local function handleCallback1(event)
-		
-			if ( event.isError ) then
-				print( "Network error!" )
-			else
-				print ( "RESPONSE: " .. event.response )
+			local function handleCallback1(event)
+			
+				if ( event.isError ) then
+					print( "Network error!" )
+				else
+					print ( "RESPONSE: " .. event.response )
+				end
 			end
-		end
-		
+			
 		if fileHandle then
 		fileHandlepost = 1
 			local function networkListener( event )
@@ -433,29 +437,32 @@ local function sendNetworkRequest(url,command)
 			params.headers = headers
 			-----------------------------
 			--END GBT specific commands--
-			print("URL = "..tostring(url))
+			print("URL = "..tostring(baseURL..url))
 			-----------------------------
 			
 			-- Params (file, filename, progress and time out)
 			local params = {};
 			print("	filename = "..tostring(filename))
-			params.body = "fileBinary=" .. fileEncoded .. "&fileName="..filename;
+
+			fileEncoded = string.gsub(tostring(fileEncoded), "+","%%2B");
+
+			params.body = "document=" .. fileEncoded .. "&fileName="..filename;
 			--params.body = "fileBinary=" .. fileEncoded .. "&sid="..GC.globalSID.."&loadIdGuid="..GC.globalGUID.."&fileName="..filename;
 			params.progress = "upload";
 			params.timeout = uploadTimeout;
 			
 			-- Get the file size for progress bar
 			fileSize = string.len(fileEncoded);
-			
+			--print(fileSize);
 			-- Set up the progress bar
 			
 			local BASE_URL_TEST = "http://moonbeam.co/processupload.aspx"	
-			
+			--print(fileEncoded)
 			-- Clean up
 			io.close( fileHandle );
 			print("	GBT CALLING PRE-POST HERE")
 			-- Make the POST
-			network.request( BASE_URL_TEST, "POST", networkListener,  params);
+			network.request( baseURL..url, "POST", networkListener,  params);
 			--network.request( POST_URL, "POST", handleCallback, params) -- GBT post method
 			print("	GBT CALLING POST-POST HERE")
 		end
@@ -463,6 +470,52 @@ local function sendNetworkRequest(url,command)
 			
 		end
 	end
+end
+
+function doesFileExist( fname )
+
+    local results = false
+
+    -- Path for the file
+    local filePath = system.pathForFile(system.DocumentsDirectory) .. "/" .. fname
+
+    if ( filePath ) then
+        local file, errorString = io.open( filePath, "r" )
+
+        if not file then
+            -- Error occurred; output the cause
+            --print( "File error: " .. errorString )
+        else
+            -- File exists!
+            --print( "File found: " .. fname )
+            results = true
+            -- Close the file handle
+            file:close()
+        end
+    end
+
+    return results
+end
+
+function WriteFile( fname, content )
+
+	-- Path for the file to write
+	local path = system.pathForFile(system.DocumentsDirectory) .. "/" .. fname
+	
+	-- Open the file handle
+	local file, errorString = io.open( path, "w+" )
+
+	if not file then
+	    -- Error occurred; output the cause
+	    --print( "File error: " .. errorString )
+	else
+	    -- Write data to file
+	    file:write( content )
+	    -- Close the file handle
+	    io.close( file )
+	end
+
+	file = nil
 end
 
 function login(params)
@@ -481,6 +534,54 @@ function login(params)
 		queryString = "id="..url.escape(params.id).."&pw="..url.escape(params.password)
 	end
 	sendNetworkRequest("login?"..queryString)
+end
+
+function Driverlogin(params)
+	
+	setCallback(params.callback)
+	local queryString = nil
+	-- TODO: This should be some kind of global
+	-- Look for apiTimeout and showPD=false in other files (shipments, quotes, etc...)
+	if (params.showPD ~= nil) then
+		showPD = params.showPD
+	end
+	--isTesting = "login"
+
+	if (params.sid) then
+		queryString = "sid="..params.sid
+		sendNetworkRequest("login?"..queryString)
+	else
+		queryString = "cell="..url.escape(params.cn)
+		sendNetworkRequest("login?"..queryString)
+	end
+	
+end
+
+function DriverLoadCount(params)
+	setCallback(params.callback)
+	local queryString = nil
+	if (params.sid) then
+		queryString = "sid="..params.sid
+		sendNetworkRequest("getDriverLoadsCount?"..queryString)
+	else
+		queryString = "cn="..url.escape(params.cn)
+		sendNetworkRequest("getDriverLoadsCount?"..queryString)
+	end
+	
+end
+
+function checkLogging(params)
+	setCallback(params.callback)
+	local queryString = nil
+	queryString = "sid="..params.sid
+	sendNetworkRequest("enableLogging?"..queryString)	
+end
+
+function LogInstall(params)
+	setCallback(params.callback)
+	local queryString = nil
+	queryString = "sid="..params.sid
+	sendNetworkRequest("installed?"..queryString)	
 end
 
 function checkSessionId(params)
@@ -740,7 +841,21 @@ function sendClaimPhoto(params)
 	print("params.loadIdGuid = "..tostring(params.loadIdGuid))
 	print("GC.IMAGE_TYPE_CLAIM_PHOTO = "..tostring(GC.IMAGE_TYPE_CLAIM_PHOTO))
 	print("---------------------------------------------------")
-	sendNetworkRequest("sid="..params.sid.."&loadIdGuid="..params.loadIdGuid.."&t="..GC.IMAGE_TYPE_CLAIM_PHOTO,"sendImage")
+	sendNetworkRequest("uploadpod?sid="..params.sid.."&loadIdGuid="..params.loadIdGuid.."&t="..GC.IMAGE_TYPE_CLAIM_PHOTO,"sendImage")
+	print(" sendNetworkRequest finish")
+end
+function sendPODPhoto(params)
+	setCallback(params.callback)
+	--isTesting = "sendClaimPhoto"
+	attachImage = true
+	print(" sendNetworkRequest call")
+	print("---------------------------------------------------")
+	print("params.sid = "..tostring(params.sid))
+	print("params.loadIdGuid = "..tostring(params.loadIdGuid))
+	print("params.addressGuid = "..tostring(params.addressGuid))
+	print("GC.IMAGE_TYPE_POD_PHOTO = "..tostring(GC.IMAGE_TYPE_POD_PHOTO))
+	print("---------------------------------------------------")
+	sendNetworkRequest("sendImage?sid="..params.sid.."&loadIdGuid="..params.loadIdGuid.."&addressGuid="..params.addressGuid.."&t="..GC.IMAGE_TYPE_POD_PHOTO,"sendImage")
 	print(" sendNetworkRequest finish")
 end
 

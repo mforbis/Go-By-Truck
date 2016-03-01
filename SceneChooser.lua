@@ -73,11 +73,11 @@ function scene:create( event )
    overlay:setFillColor(0,0,0,0)
    overlay.x, overlay.y = display.contentCenterX, display.contentCenterY
 
-   bg = display.newImageRect(sceneGroup,"graphics/bg.png",display.contentWidth,display.contentHeight)
-   bg.x, bg.y = display.contentCenterX, display.contentCenterY
+   bg = display.newImageRect(sceneGroup,"graphics/bg_truck.png",display.contentWidth,display.contentHeight)
+   bg.x, bg.y = display.contentCenterX, display.contentCenterY 
 
    imgLogo = display.newImageRect("graphics/logo_tag.png",256, 88 )
-   imgLogo.x, imgLogo.y = display.contentCenterX,  display.contentHeight *.2
+   imgLogo.x, imgLogo.y = display.contentCenterX,  display.contentHeight *.2 - 50
    sceneGroup:insert(imgLogo)
 
    local elementWidth = display.contentWidth - PADDING * 2
@@ -87,32 +87,27 @@ function scene:create( event )
    local btnHeight = 97
    local btnSpace = 20
 
-   local text1 = [[Go By Truck is the first full service system designed and build specifically
-    for the shipping industry. Our founders spent years in the industry with one mission: ]]
+   local x = display.contentWidth - (btnWidth * 3) - (btnSpace *2)
 
-   local text2 = [[To design and build a sustainable free market system that will change the face
-    of the shipping industry.]]
-   local text3 = [[Please select your role:]]
-   local options = {
-      text = text1,
-      x = display.contentCenterX,
-      width = imgLogo.width + 20,
-      fontSize = 14,
-      align = "center",
-      font = GC.APP_FONT
-   }
 
-   textarea1 = display.newText(options)
-   textarea1.y=imgLogo.y + imgLogo.height + 20
-   sceneGroup:insert(textarea1)
+   btnCarrier = display.newImageRect("graphics/btnCarrier.png",btnWidth,btnHeight)
+   btnCarrier.x, btnCarrier.y = display.contentCenterX, display.contentHeight  *.9 - 10
+   btnCarrier:addEventListener("touch", onCarrierClick)
+   sceneGroup:insert(btnCarrier)
 
-   textarea2 = display.newText(options)
-   textarea2.text=text2
-   textarea2.y=textarea1.y + textarea1.height
-   sceneGroup:insert(textarea2)
+   btnDriver = display.newImageRect("graphics/btnDriver.png",btnWidth,btnHeight)
+   btnDriver.x, btnDriver.y = btnCarrier.x - btnWidth - btnSpace, btnCarrier.y
+   btnDriver:addEventListener("touch", onDriverClick)
+   sceneGroup:insert(btnDriver)
+  
+
+   btnShipper = display.newImageRect("graphics/btnShipper.png",btnWidth,btnHeight)
+   btnShipper.x, btnShipper.y = btnCarrier.x + btnWidth + btnSpace, btnCarrier.y
+   btnShipper:addEventListener("touch", onShipperClick)
+   sceneGroup:insert(btnShipper)
 
    local options = {
-      text = text1,
+      text = "Please select your role:",
       x = display.contentCenterX,
       width = imgLogo.width + 20,
       fontSize = 20,
@@ -120,27 +115,11 @@ function scene:create( event )
       font = GC.APP_FONT
    }
 
-   textarea3 = display.newText(options)
-   textarea3.y=textarea2.y + textarea2.height 
-   textarea3.text = text3
-   sceneGroup:insert(textarea3)
+   pleaseselect_text = display.newText(options)
+   pleaseselect_text.y=btnShipper.y - btnShipper.height + 20
+   sceneGroup:insert(pleaseselect_text)
 
-   btnDriver = display.newImageRect("graphics/btnDriver.png",btnWidth,btnHeight)
-   btnDriver.x, btnDriver.y = display.contentCenterX/3 + btnSpace, display.contentHeight  *.9 - 10
-   btnDriver:addEventListener("touch", onDriverClick)
-   sceneGroup:insert(btnDriver)
 
-   btnCarrier = display.newImageRect("graphics/btnCarrier.png",btnWidth,btnHeight)
-   btnCarrier.x, btnCarrier.y = btnDriver.x + btnWidth + btnSpace, btnDriver.y
-   btnCarrier:addEventListener("touch", onCarrierClick)
-   sceneGroup:insert(btnCarrier)
-
-   btnShipper = display.newImageRect("graphics/btnShipper.png",btnWidth,btnHeight)
-   btnShipper.x, btnShipper.y = btnCarrier.x + btnWidth + btnSpace, btnCarrier.y
-   btnShipper:addEventListener("touch", onShipperClick)
-   sceneGroup:insert(btnShipper)
-
-  
 end
 
 function scene:show( event )
@@ -187,13 +166,7 @@ function scene:destroy( event )
    imgLogo:removeSelf()
    imgLogo = nil
 
-   textarea1:removeSelf()
-   textarea1 = nil
-   textarea2:removeSelf()
-   textarea2 = nil
-   textarea3:removeSelf()
-   textarea3 = nil
-
+   
    for i = 1, #elements do
       elements[1]:removeSelf()
       table.remove(elements,1)

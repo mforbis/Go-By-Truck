@@ -18,7 +18,7 @@ local HIDDEN_PASSWORD_TEXT = "SOMEVALUETOSHOW"
 
 local INPUT_WIDTH = 280
 local INPUT_HEIGHT = 30
-local BOX_SIZE = 25
+local BOX_SIZE = 20
 
 local showingAlert = false
 local bg = nil
@@ -49,15 +49,20 @@ local hasFocus
 
 local function alertDismiss(event)
    showingAlert = false
-   tfPass.isVisible = true
-   tfUser.isVisible = true
+   tfPhone.isVisible = true
 end
 
 local function handleInput(self)
    if (self.id == "user") then
+      local txt = self.text
+      txt = string.gsub( txt, "-", "")  
+      if(string.len(txt)>=10)then
+          txt=string.sub(txt, 1, 3) .. "-" .. string.sub(txt, 4, 6) .. "-" .. string.sub(txt, 7, 10)
+          self.text=txt
+      else
+         self.text=txt
+      end
       userName = self.text
-   else
-      password = self.text
    end
 end
 
@@ -73,8 +78,7 @@ local function showMessage()
          api.sendAPIError({scene="Login",reason="Invalid JSON"})
       end
 
-      tfPass.isVisible = false
-      tfUser.isVisible = false
+      tfPhone.isVisible = false
       alert:show({
          title = SceneManager.getRosettaString("error"),
          message = SceneManager.getRosettaString(messageQ),
@@ -126,10 +130,7 @@ local function switchToRoleScene()
 end
 
 local function showToast(text)
-   showingToast = true
-   composer.removeScene("toast")
-   local options = {isModal = true, params = {message = text}}
-   composer.showOverlay("toast", options)
+   
 end
 
 local function hideToast()
@@ -191,7 +192,7 @@ local function apiCallback(response)
       messageQ = "invalid_server_response"
    elseif (response.user.statusId == GC.API_ERROR) then
          if (SceneManager.getUserSID() ~= "") then
-            tfPass.text = ""
+            --tfPass.text = ""
          end
          SceneManager.setUserSID("")
          messageQ = response.error_msg.errorMessage or "server_error"
@@ -199,6 +200,7 @@ local function apiCallback(response)
       if (response.user.userGuid ~= nil and response.user.masterRole ~= nil) then
          SceneManager.setUserSID(response.user.userGuid)
          -- Set Pushbots tag
+
          _G.addTag(SceneManager.getUserSID())
          SceneManager.setUserRole(response.user.masterRole)
          SceneManager.setReferralCode(response.user.referralCode)
@@ -241,10 +243,9 @@ local function apiCallback(response)
 end
 
 local function fieldsSet()
-   if (userName == "" or password == "") then
+   if (userName == "") then
       showingAlert = true
-      tfPass.isVisible = false
-      tfUser.isVisible = false
+      tfPhone.isVisible = false
       alert:show({title = SceneManager.getRosettaString("fields_not_set_title"),
          message = SceneManager.getRosettaString("fields_not_set_message"),sendCancel = true,
          buttons={SceneManager.getRosettaString("ok")},
@@ -259,8 +260,7 @@ local function handleLogin(show)
    native.setKeyboardFocus( nil )
    hasFocus = nil
    
-   local temp = tfUser.text
-   temp = tfPass.text
+   local temp = tfPhone.text
    
    if (fieldsSet()) then
       isLoggingIn = true
@@ -270,7 +270,7 @@ local function handleLogin(show)
       -- Do not read in text field value if forcing login
       -- Android will not have the value we need.
       if (not forcingLogin) then
-         --SceneManager.setUserID(tfUser.text)
+         SceneManager.setUserPhoneID(tfPhone.text)
          --SceneManager.setUserPass(password)
       end
 
@@ -279,12 +279,12 @@ local function handleLogin(show)
       end
 
       startTimeout()
-
-      --if (SceneManager.getUserSID() ~= "") then
-      --   api.login({sid=SceneManager.getUserSID(),showPD=false,callback=apiCallback})
-      --else
-      --   api.login({id=tfUser.text,password=password,showPD=false,callback=apiCallback})
-      --end
+      
+      if (SceneManager.getUserSID() ~= "") then
+         api.login({sid=SceneManager.getUserSID(),showPD=false,callback=apiCallback})
+      else
+         api.Driverlogin({cn=tfPhone.text,callback=apiCallback})
+      end
    end
 end
 
@@ -294,15 +294,20 @@ local function inputListener( event )
    end
    
    if event.phase == "began" then
+      if (event.target.id == "user") then
+         if tfPhone.text == GC.PHONE_PLACEHOLDER then
+            tfPhone.text = ""
+         end
+      end
    elseif event.phase == "ended" then
-      
+      if (event.target.id == "user") then
+         if tfPhone.text == "" then
+            tfPhone.text = GC.PHONE_PLACEHOLDER
+         end
+      end
    elseif event.phase == "submitted" then
       native.setKeyboardFocus( nil )
-      if (event.target.id == "password") then
-         handleLogin()
-      else
-         native.setKeyboardFocus(tfPass)
-      end
+      handleLogin()
    elseif event.phase == "editing" then
       handleInput(event.target)
    end
@@ -362,13 +367,22 @@ function scene:create( event )
    isLoggingIn = false
    hasLoggedIn = false
 
- 
+   hasAutomaticLogin = SceneManager.hasAutomaticLogin()
 
-   bg = display.newImageRect(sceneGroup,"graphics/bg.png",display.contentWidth,display.contentHeight)
+   userName = SceneManager.getUserPhoneID()
+
+   bg = display.newImageRect(sceneGroup,"graphics/bg_truck.png",display.contentWidth,display.contentHeight)
    bg.x, bg.y = display.contentCenterX, display.contentCenterY
 
    logotag = display.newImageRect(sceneGroup,"graphics/logo_tag.png",256, 88 )
    logotag.x, logotag.y = display.contentCenterX,  80
+   function logotag:touch( event )
+      if event.phase == "ended" or event.phase == "cancelled" then
+         SceneManager.setAppLoad(true)
+         SceneManager.goToHomeScene()
+      end
+   end
+   logotag:addEventListener( "touch", logotag )
    sceneGroup:insert(logotag)
 
    function bg:touch( event )
@@ -379,10 +393,7 @@ function scene:create( event )
    
    bg:addEventListener( "touch", bg )
 
-   
-
-
-   bgPhone = display.newRoundedRect( sceneGroup,0, 0, INPUT_WIDTH, INPUT_HEIGHT + 10,8 )
+   bgPhone = display.newRoundedRect( sceneGroup,0, 0, INPUT_WIDTH, INPUT_HEIGHT + 10,GC.INPUT_ROUNDED_CORNER )
    bgPhone:setFillColor(unpack(GC.INPUT_FIELD_BG_COLOR))
    bgPhone.strokeWidth = GC.INPUT_FIELD_BORDER_WIDTH
    bgPhone:setStrokeColor(unpack(GC.INPUT_FIELD_BORDER_COLOR))
@@ -398,31 +409,51 @@ function scene:create( event )
    tfPhone:addEventListener( "userInput", inputListener )
    tfPhone.hasBackground = false
    tfPhone.text = userName
-   tfPhone.placeholder = "Enter Phone Number"
-   tfPhone.inputType = "number"
+   --tfPhone.placeholder = "Enter Phone Number"
+   tfPhone.inputType = "phone"
+   if userName == "" then
+      tfPhone.text = GC.PHONE_PLACEHOLDER
+   else
+      tfPhone.text = userName
+   end
    sceneGroup:insert(tfPhone)
    tfPhone.x, tfPhone.y = bgPhone.x, bgPhone.y
+   
+   
+   -- btnSignup = widget.newButton{
+   --    id = "signup",
+   --    defaultColor = GC.GREY_BUTTON,
+   --    overColor = GC.BUTTON_ACTION_BACKGROUND_COLOR_OVER,
+   --    font = GC.BUTTON_FONT,
+   --    fontSize = GC.BUTTON_FONT_SIZE,
+   --    label=SceneManager.getRosettaString("signup"),
+   --    labelColor = { default=GC.BUTTON_TEXT_COLOR, over=GC.BUTTON_TEXT_COLOR_OVER },
+   --    width = INPUT_WIDTH * 0.5 - 5,
+   --    height = INPUT_FIELD_TEXT_SIZE,
+   --    cornerRadius = GC.BUTTON_ACTION_RADIUS_SIZE,
+   --    strokeColor = GC.GREY_BUTTON_BORDER,
+   --    strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
+   --    onRelease = onEventCallback
+   -- }
+   -- btnSignup.x, btnSignup.y =  bgPhone.stageBounds.xMin + btnSignup.width * 0.5, bgPhone.stageBounds.yMax + btnSignup.height + 50
+   --sceneGroup:insert(btnSignup)
 
-   
-   
-   btnSignup = widget.newButton{
-      id = "signup",
-      defaultColor = GC.MEDIUM_GRAY3,
-      overColor = GC.BUTTON_ACTION_BACKGROUND_COLOR_OVER,
-      font = GC.BUTTON_FONT,
-      fontSize = GC.BUTTON_FONT_SIZE,
-      label=SceneManager.getRosettaString("signup"),
-      labelColor = { default=GC.BUTTON_TEXT_COLOR, over=GC.BUTTON_TEXT_COLOR_OVER },
-      width = INPUT_WIDTH * 0.5 - 5,
-      height = INPUT_FIELD_TEXT_SIZE,
-      cornerRadius = GC.BUTTON_ACTION_RADIUS_SIZE,
-      strokeColor = GC.BUTTON_ACTION_BORDER_COLOR,
-      strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
-      onRelease = onEventCallback
-   }
-   btnSignup.x, btnSignup.y =  bgPhone.stageBounds.xMin + btnSignup.width * 0.5, bgPhone.stageBounds.yMax + btnSignup.height + 50
-   btnSignup.x, btnSignup.y =  bgPhone.stageBounds.xMin + btnSignup.width * 0.5, bgPhone.stageBounds.yMax + btnSignup.height + 50
-   sceneGroup:insert(btnSignup)
+   checkbox = display.newRoundedRect( sceneGroup, 0, 0, BOX_SIZE, BOX_SIZE,0)
+   checkbox.strokeWidth = 1
+   checkbox:setStrokeColor(unpack(GC.INPUT_FIELD_BORDER_COLOR))
+   checkbox:setFillColor(unpack(GC.INPUT_FIELD_BG_COLOR))
+   checkbox.x, checkbox.y = tfPhone.stageBounds.xMin + (checkbox.width * 0.5), tfPhone.stageBounds.yMax + (checkbox.height * 0.5) + 15
+   checkbox:addEventListener("tap", toggleAutomatic)
+
+   check = display.newImageRect(sceneGroup, "graphics/check_white.png", BOX_SIZE - 4, BOX_SIZE - 4)
+   check:setFillColor(unpack(GC.ORANGE))
+   check.x, check.y = checkbox.x, checkbox.y
+   check.isVisible = hasAutomaticLogin
+
+   lblAutomaticLogin = display.newText(sceneGroup, SceneManager.getRosettaString("automatic_login"), 0, 0, GC.APP_FONT, 20)
+   lblAutomaticLogin:setFillColor(unpack(GC.HINT_TEXT_COLOR))
+   lblAutomaticLogin.anchorX = 0
+   lblAutomaticLogin.x, lblAutomaticLogin.y = checkbox.stageBounds.xMax + 10, checkbox.y
 
 
    btnLogin = widget.newButton{
@@ -433,18 +464,17 @@ function scene:create( event )
       fontSize = GC.BUTTON_FONT_SIZE,
       label=SceneManager.getRosettaString("login"),
       labelColor = { default=GC.BUTTON_TEXT_COLOR, over=GC.BUTTON_TEXT_COLOR_OVER },
-      width = INPUT_WIDTH * 0.5 - 5,
+      width = INPUT_WIDTH * 0.50,
       height = INPUT_FIELD_TEXT_SIZE,
       cornerRadius = GC.BUTTON_ACTION_RADIUS_SIZE,
       strokeColor = GC.BUTTON_ACTION_BORDER_COLOR,
       strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
       onRelease = onEventCallback
    }
-   btnLogin.x, btnLogin.y =  btnSignup.x + btnSignup.width + 10, btnSignup.y
+   btnLogin.x, btnLogin.y =  bgPhone.x, lblAutomaticLogin.y + btnLogin.height + 10
+   sceneGroup:insert(btnLogin)
 
    
-
-   sceneGroup:insert(btnLogin)
 
    if (SceneManager.isAppLoad()) then
       showSplash()
@@ -452,8 +482,8 @@ function scene:create( event )
       if (hasAutomaticLogin and SceneManager.getUserSID() ~= "") then
          forcingLogin = true
          --password = HIDDEN_PASSWORD_TEXT
-         password = SceneManager.getUserPass() -- We now need this, so fake value won't work
-         tfPass.text = password
+         --password = SceneManager.getUserPass() -- We now need this, so fake value won't work
+         tfPhone.text = SceneManager.getUserPhoneID()
          -- Is our session still valid?
          checkSession()
       end
@@ -492,7 +522,7 @@ function scene:hide( event )
    elseif ( phase == "did" ) then
       -- Called immediately after scene goes off screen.
       if (not showingOverlay or not showingToast) then
-         composer.removeScene("SceneLogin",false)
+         composer.removeScene("SceneDriverLogin",false)
       end
    end
 end
@@ -502,14 +532,17 @@ function scene:destroy( event )
    bg:removeSelf()
    bg = nil
 
-   bgPhone:removeSelf()
-   bgPhone = nil
-
-   tfPhone:removeSelf()
-   tfPhone = nil
-
    logotag:removeSelf()
    logotag = nil
+
+   check:removeSelf()
+   check = nil
+
+   checkbox:removeSelf()
+   checkbox = nil
+
+   lblAutomaticLogin:removeSelf()
+   lblAutomaticLogin = nil
 
    btnLogin:removeSelf()
    btnLogin = nil

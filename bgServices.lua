@@ -8,6 +8,10 @@ local GC = require("AppConstants")
 local currPoint = {}
 local lastPoint = {}
 
+LocationOffCallback = nil
+LocationOnCallback = nil
+EnableLoggingCall = nil
+
 local TIME_
 _G.bgServicesRunning = false
 
@@ -43,9 +47,16 @@ local function driverLocationCallback(event)
 	  	messageQ = response.error_msg.errorMessage
 	elseif (response.status == "true") then
 		messageQ = "Driver Location Sent"
+		if(LocationOnCallback~=nil) then
+			LocationOnCallback()
+		end
 	else
 	  	messageQ = "Couldn't Send Driver Location"
 	end
+
+	--if (response.locating == "disabled") then
+	--	stopLocationService()
+	--end
    
 	--print ("GBT: (locationCallback) - "..messageQ)
 end
@@ -126,6 +137,8 @@ function stopLocationService()
 	if (_G.bgServicesRunning) then
 		print ("GBT: Stopping Location Service")
 
+		--local cbResult = LocationOffCallback()
+
 		Runtime:removeEventListener( "location", locationHandler )
 		_G.bgServicesRunning = false
 	end
@@ -141,13 +154,20 @@ local function alertOnComplete( event )
 		end
 	end
 end
+local function onComplete( event )
+  
+end
 
 local function onSystemEvent( event )
 	--print ("GBT: onSystemEvent() - "..event.type)
     if (event.type == "applicationExit") then
-        stopLocationService() 
-    elseif (event.type == "applicationStart") or (event.type == "applicationResume")  then
-	    
+        --stopLocationService() 
+    elseif (event.type == "applicationStart") then
+    elseif (event.type == "applicationResume")  then
+    	
+    	if EnableLoggingCall ~= nil then
+    		EnableLoggingCall()
+		end
     elseif event.type == "applicationOpen" then
     	native.setProperty( "applicationIconBadgeNumber", 0)
     	if event.url then

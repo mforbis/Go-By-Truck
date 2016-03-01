@@ -11,6 +11,7 @@ local utils = require("utils")
 
 -- TODO: Need to handle being sent back here if logged out from the server later in the app
 -- app will return here
+
 local MessageX = display.contentCenterX
 local MessageY = 360
 
@@ -18,7 +19,7 @@ local HIDDEN_PASSWORD_TEXT = "SOMEVALUETOSHOW"
 
 local INPUT_WIDTH = 280
 local INPUT_HEIGHT = 30
-local BOX_SIZE = 25
+local BOX_SIZE = 20
 
 local showingAlert = false
 local bg = nil
@@ -300,8 +301,27 @@ local function inputListener( event )
    end
    
    if event.phase == "began" then
+      if (event.target.id == "password") then
+         if tfPass.text == GC.PASSWORD_PLACEHOLDER then
+            tfPass.isSecure = true
+            tfPass.text = ""
+         end
+      else
+         if tfUser.text == GC.USERNAME_PLACEHOLDER then
+            tfUser.text = ""
+         end
+      end
    elseif event.phase == "ended" then
-      
+      if (event.target.id == "password") then
+         if tfPass.text == "" then
+            tfPass.isSecure = false
+            tfPass.text = GC.PASSWORD_PLACEHOLDER
+         end
+      else
+         if tfUser.text == "" then
+            tfUser.text = GC.USERNAME_PLACEHOLDER
+         end
+      end
    elseif event.phase == "submitted" then
       native.setKeyboardFocus( nil )
       if (event.target.id == "password") then
@@ -373,11 +393,18 @@ function scene:create( event )
    userName = SceneManager.getUserID()
    password = ""
 
-   bg = display.newImageRect(sceneGroup,"graphics/bg.png",display.contentWidth,display.contentHeight)
+   bg = display.newImageRect(sceneGroup,"graphics/bg_truck.png",display.contentWidth,display.contentHeight)
    bg.x, bg.y = display.contentCenterX, display.contentCenterY
 
    logotag = display.newImageRect(sceneGroup,"graphics/logo_tag.png",256, 88 )
    logotag.x, logotag.y = display.contentCenterX,  80
+   function logotag:touch( event )
+      if event.phase == "ended" or event.phase == "cancelled" then
+         SceneManager.setAppLoad(true)
+         SceneManager.goToHomeScene()
+      end
+   end
+   logotag:addEventListener( "touch", logotag )
    sceneGroup:insert(logotag)
 
    function bg:touch( event )
@@ -388,10 +415,7 @@ function scene:create( event )
    
    bg:addEventListener( "touch", bg )
 
-   
-
-
-   bgUser = display.newRoundedRect( sceneGroup,0, 0, INPUT_WIDTH, INPUT_HEIGHT + 10,8 )
+   bgUser = display.newRoundedRect( sceneGroup,0, 0, INPUT_WIDTH, INPUT_HEIGHT + 10,GC.INPUT_ROUNDED_CORNER )
    bgUser:setFillColor(unpack(GC.INPUT_FIELD_BG_COLOR))
    bgUser.strokeWidth = GC.INPUT_FIELD_BORDER_WIDTH
    bgUser:setStrokeColor(unpack(GC.INPUT_FIELD_BORDER_COLOR))
@@ -406,12 +430,16 @@ function scene:create( event )
    tfUser:setTextColor(unpack(GC.INPUT_FIELD_TEXT_COLOR))
    tfUser:addEventListener( "userInput", inputListener )
    tfUser.hasBackground = false
-   tfUser.text = userName
-   tfUser.placeholder = "User Name"
+   if userName == "" then
+      tfUser.text = GC.USERNAME_PLACEHOLDER
+   else
+      tfUser.text = userName
+   end
+   --tfUser.placeholder = "User Name"
    sceneGroup:insert(tfUser)
    tfUser.x, tfUser.y = bgUser.x, bgUser.y
 
-   bgPass = display.newRoundedRect( sceneGroup,0, 0, INPUT_WIDTH, INPUT_HEIGHT + 10,8 )
+   bgPass = display.newRoundedRect( sceneGroup,0, 0, INPUT_WIDTH, INPUT_HEIGHT + 10,GC.INPUT_ROUNDED_CORNER )
    bgPass:setFillColor(unpack(GC.INPUT_FIELD_BG_COLOR))
    bgPass.strokeWidth = GC.INPUT_FIELD_BORDER_WIDTH
    bgPass:setStrokeColor(unpack(GC.INPUT_FIELD_BORDER_COLOR))
@@ -422,33 +450,52 @@ function scene:create( event )
    tfPass:setReturnKey( "go" )
    tfPass.id = "password"
    tfPass.inputType = "default"
-   tfPass.isSecure = true
+   --tfPass.isSecure = true
    tfPass.align = "left"
    tfPass.size = GC.INPUT_FIELD_TEXT_SIZE
    tfPass:addEventListener( "userInput", inputListener )
    tfPass:setTextColor(unpack(GC.INPUT_FIELD_TEXT_COLOR))
    tfPass.hasBackground = false
-   tfPass.placeholder = "Password"
-   sceneGroup:insert(tfPass)
+   tfPass.text = GC.PASSWORD_PLACEHOLDER
+   --tfPass.placeholder = "Password"
    tfPass.x, tfPass.y = bgPass.x, bgPass.y
+   sceneGroup:insert(tfPass)
    
-   btnSignup = widget.newButton{
-      id = "signup",
-      defaultColor = GC.MEDIUM_GRAY3,
-      overColor = GC.BUTTON_ACTION_BACKGROUND_COLOR_OVER,
-      font = GC.BUTTON_FONT,
-      fontSize = GC.BUTTON_FONT_SIZE,
-      label=SceneManager.getRosettaString("signup"),
-      labelColor = { default=GC.BUTTON_TEXT_COLOR, over=GC.BUTTON_TEXT_COLOR_OVER },
-      width = INPUT_WIDTH * 0.5 - 5,
-      height = INPUT_FIELD_TEXT_SIZE,
-      cornerRadius = GC.BUTTON_ACTION_RADIUS_SIZE,
-      strokeColor = GC.BUTTON_ACTION_BORDER_COLOR,
-      strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
-      onRelease = onEventCallback
-   }
-   btnSignup.x, btnSignup.y =  bgPass.stageBounds.xMin + btnSignup.width * 0.5, bgPass.stageBounds.yMax + btnSignup.height + 50
-   sceneGroup:insert(btnSignup)
+   
+   -- btnSignup = widget.newButton{
+   --    id = "signup",
+   --    defaultColor = GC.GREY_BUTTON,
+   --    overColor = GC.BUTTON_ACTION_BACKGROUND_COLOR_OVER,
+   --    font = GC.BUTTON_FONT,
+   --    fontSize = GC.BUTTON_FONT_SIZE,
+   --    label=SceneManager.getRosettaString("signup"),
+   --    labelColor = { default=GC.BUTTON_TEXT_COLOR, over=GC.BUTTON_TEXT_COLOR_OVER },
+   --    width = INPUT_WIDTH * 0.5 - 5,
+   --    height = INPUT_FIELD_TEXT_SIZE,
+   --    cornerRadius = GC.BUTTON_ACTION_RADIUS_SIZE,
+   --    strokeColor = GC.GREY_BUTTON_BORDER,
+   --    strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
+   --    onRelease = onEventCallback
+   -- }
+   -- btnSignup.x, btnSignup.y =  bgPass.stageBounds.xMin + btnSignup.width * 0.5, bgPass.stageBounds.yMax + btnSignup.height + 50
+   -- sceneGroup:insert(btnSignup)
+
+   checkbox = display.newRoundedRect( sceneGroup, 0, 0, BOX_SIZE, BOX_SIZE,0 )
+   checkbox.strokeWidth = 1
+   checkbox:setStrokeColor(unpack(GC.INPUT_FIELD_BORDER_COLOR))
+   checkbox:setFillColor(unpack(GC.INPUT_FIELD_BG_COLOR))
+   checkbox.x, checkbox.y = tfPass.stageBounds.xMin + (checkbox.width * 0.5), tfPass.stageBounds.yMax + (checkbox.height * 0.5) + 15
+   checkbox:addEventListener("tap", toggleAutomatic)
+
+   check = display.newImageRect(sceneGroup, "graphics/check_white.png", BOX_SIZE - 4, BOX_SIZE - 4)
+   check:setFillColor(unpack(GC.ORANGE))
+   check.x, check.y = checkbox.x, checkbox.y
+   check.isVisible = hasAutomaticLogin
+
+   lblAutomaticLogin = display.newText(sceneGroup, SceneManager.getRosettaString("automatic_login"), 0, 0, GC.APP_FONT, 20)
+   lblAutomaticLogin:setFillColor(unpack(GC.HINT_TEXT_COLOR))
+   lblAutomaticLogin.anchorX = 0
+   lblAutomaticLogin.x, lblAutomaticLogin.y = checkbox.stageBounds.xMax + 10, checkbox.y
 
 
    btnLogin = widget.newButton{
@@ -466,27 +513,11 @@ function scene:create( event )
       strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
       onRelease = onEventCallback
    }
-   btnLogin.x, btnLogin.y =  btnSignup.x + btnSignup.width + 10, btnSignup.y
-
-   
-
+   --btnLogin.x, btnLogin.y =  btnSignup.x + btnSignup.width + 10, btnSignup.y
+   btnLogin.x, btnLogin.y = tfPass.x, lblAutomaticLogin.y + btnLogin.height + 10
    sceneGroup:insert(btnLogin)
 
-   checkbox = display.newRect( sceneGroup, 0, 0, BOX_SIZE, BOX_SIZE )
-   checkbox.strokeWidth = 1
-   checkbox:setStrokeColor(unpack(GC.INPUT_FIELD_BORDER_COLOR))
-   checkbox.x, checkbox.y = bgPass.stageBounds.xMin + checkbox.width * 0.5, btnLogin.stageBounds.yMax + checkbox.height * 0.5 + 10
-   checkbox:addEventListener("tap", toggleAutomatic)
-
-   check = display.newImageRect(sceneGroup, "graphics/check_white.png", BOX_SIZE - 4, BOX_SIZE - 4)
-   check:setFillColor(unpack(GC.ORANGE))
-   check.x, check.y = checkbox.x, checkbox.y
-   check.isVisible = hasAutomaticLogin
-
-   lblAutomaticLogin = display.newText(sceneGroup, SceneManager.getRosettaString("automatic_login"), 0, 0, GC.APP_FONT, 20)
-   lblAutomaticLogin:setFillColor(unpack(GC.HINT_TEXT_COLOR))
-   lblAutomaticLogin.anchorX = 0
-   lblAutomaticLogin.x, lblAutomaticLogin.y = checkbox.stageBounds.xMax + 10, checkbox.y
+   
 
    if (SceneManager.isAppLoad()) then
       showSplash()

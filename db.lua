@@ -36,6 +36,8 @@ local function onSystemEvent( event )
 end
 
 local function executeQuery(query)
+
+	print(query)
 	local path = system.pathForFile(DATABASE_NAME, system.DocumentsDirectory)
 	local db = sqlite3.open( path )
 	
@@ -168,6 +170,31 @@ end
 
 
 
+
+function TableExists(tablename)
+	local path = system.pathForFile(DATABASE_NAME, system.DocumentsDirectory)
+	local db = sqlite3.open( path )
+
+	
+	local sql = "select * from sqlite_master where name='FirstLoad' and type='table'"
+	--Log (sql)
+
+	local i = 0
+
+	for row in db:nrows(sql) do
+		i = i + 1
+	end
+	db:close()
+
+	if(i==0) then
+		return false
+	else
+		return true
+	end
+
+end
+
+
 function getMessages(sid, filter)
 	-- filter (nil = all, read, types)
 
@@ -236,8 +263,55 @@ local function createMessageTable()
 	end
 end
 
+local function createFirstLoadTable()
+	local path = system.pathForFile(DATABASE_NAME, system.DocumentsDirectory)
+	local db = sqlite3.open(path)
+	
+	if (db) then
+		--Setup the table if it doesn't exist
+		local tablesetup =[[CREATE TABLE IF NOT EXISTS 'FirstLoad'(mid INTEGER PRIMARY KEY,type);]]
+		db:exec(tablesetup)
+		
+		db:close()
+	end
+end
+
+function checkFirstLoad(loadtype)
+	-- filter (nil = all, read, types)
+	if(TableExists("FirstLoad")) then
+		local path = system.pathForFile(DATABASE_NAME, system.DocumentsDirectory)
+		local db = sqlite3.open( path )
+
+		
+		local sql = "select * from FirstLoad where type='".. loadtype .."'"
+		--Log (sql)
+
+		local i = 0
+
+		for row in db:nrows(sql) do
+			i = i + 1
+		end
+		db:close()
+
+		if(i==0) then
+			local query = "insert into FirstLoad(type) VALUES ('".. loadtype .. "')"
+			local temp = executeQuery(query)
+			return true
+		else
+			return false
+		end
+	else
+		createFirstLoadTable()
+		local query = "insert into FirstLoad(type) VALUES ('".. loadtype .. "')"
+		executeQuery(query)
+		return true
+	end
+end
+
+
 local function create()
 	createMessageTable()
+	createFirstLoadTable()
 end
 
 function init()

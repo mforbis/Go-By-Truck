@@ -11,12 +11,12 @@ local status = require("status")
 local toggle = require("toggle")
 local navMenu = require("overlayNavMenu")
 local api = require("api")
+local loadcount = 0
 
 local sceneGroup = nil
-local msgCount = ""
 
 local PADDING = 10
-
+local ShowedFirstLoad = nil
 local bg = nil
 local header = nil
 local logo = nil
@@ -41,11 +41,15 @@ local BADGE_LABEL_COLOR = GC.ORANGE
 local badgeBG, badge = nil, nil
 local badges = nil
 local updatingBadges = nil
+local gettingloads = nil
 
 local PRIMARY_SIZE = 145
 local PRIMARY_ICON_SIZE = 50
 
 local messageQ = nil
+
+
+
 
 local tool_options = {
    {role = GC.USER_ROLE_TYPE_CARRIER, options = {"find_freight","gbt_bank","my_shipments","my_quotes","my_trailers"}},  
@@ -85,6 +89,8 @@ local elements = nil
 local menuSelected = nil
 
 
+
+
 local function getElementById(id)
    local index = nil
 
@@ -97,6 +103,19 @@ local function getElementById(id)
    end
 
    return nil
+end
+
+local function SetLocatingLabelActive()
+   --getElementById("LocationAlert"):setFillColor(unpack(GC.ORANGE2))      
+   --getElementById("LocationAlert"):setStrokeColor(unpack(GC.BUTTON_ACTION_BORDER_COLOR)) 
+   getElementById("LocationAlert"):setFrame(2)
+   --getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_ACTIVE")
+end
+local function SetLocatingLabelInActive()
+   --getElementById("LocationAlert"):setFillColor(unpack(GC.MEDIUM_GRAY3))
+   --getElementById("LocationAlert"):setStrokeColor(unpack(GC.GREY_BUTTON_BORDER))
+   getElementById("LocationAlert"):setFrame(1)
+   --getElementById("txtLocationAlert").text = SceneManager.getRosettaString("LOCATION_INACTIVE")
 end
 
 local function showStatus(text_id)
@@ -120,15 +139,17 @@ local function updateLocationStatus()
    local color = GC.MEDIUM_GRAY
    local overColor = GC.DARK_GRAY
    local borderColor = GC.DARK_GRAY
-   
+
    if (SceneManager.getLocationState()) then
       label = "on"
       color = GC.ORANGE
       overColor = GC.ORANGE_OVER
       borderColor = GC.ORANGE_OVER
       bgServices.startLocationService()
+      SetLocatingLabelActive()
    else
       bgServices.stopLocationService()
+      SetLocatingLabelInActive()
    end
    
    primaryButtons[2]:setDefaultColor(color)
@@ -154,13 +175,35 @@ end
 local function toggleLocationState()
    SceneManager.toggleLocationState()
    getElementById("send_location").setState(SceneManager.getLocationState())
+   
 
    if (SceneManager.getLocationState()) then
       bgServices.startLocationService()
+      SetLocatingLabelActive()
    else
       bgServices.stopLocationService()
+      SetLocatingLabelInActive()
    end
 end
+
+local function LocationOffCallback()
+   SceneManager.setLocationState(false)
+   getElementById("send_location").setState(SceneManager.getLocationState())
+  SetLocatingLabelInActive()
+  
+end
+
+local function LocationOnCallback()
+   SceneManager.setLocationState(true)
+   getElementById("send_location").setState(SceneManager.getLocationState())
+   
+   SetLocatingLabelActive()
+  
+end
+
+bgServices.LocationOffCallback = LocationOffCallback
+bgServices.LocationOnCallback = LocationOnCallback
+
 
 local function showDriverMap()
    if (_G.currPoint.lat == 0 or _G.currPoint.lon == 0) then
@@ -196,7 +239,11 @@ local function handleLogout()
    _G.removeTag(SceneManager.getUserSID())
    SceneManager.setUserSID("")
    SceneManager.setSessionId(nil)
-   SceneManager.goToLoginScene()
+   if SceneManager.getUserRole() == GC.API_ROLE_DRIVER then
+      SceneManager.goToDriverLoginScene()
+   else
+      SceneManager.goToLoginScene()
+   end
 end
 
 local function getRoleIndex(table)
@@ -221,48 +268,37 @@ local function showOptions(option_table)
    GC.TOOLS_OVERLAY = true
    local buttons = {}
    local options = {}
-   local badges = {}
 
    for i = 1, #option_table[index].options do
       buttons[i] = SceneManager.getRosettaString(option_table[index].options[i])
       options[i] = option_table[index].options[i]
-      badges[i] = ""
    end
-
-   local groups = {"Find Freight","My Quotes","Message Center", "Refer GBT","Log Out"}
    
    local userRole = SceneManager.getUserRoleType()
-   
+
    table.insert(buttons,SceneManager.getRosettaString("message_center"))
    table.insert(options,"message_center")
-   table.insert(badges,db.getMessageCount(SceneManager.getUserSID()))
 
    if (userRole ~= GC.USER_ROLE_TYPE_DRIVER) then
       table.insert(buttons,SceneManager.getRosettaString("feedback"))
       table.insert(options,"feedback")
-      table.insert(badges,"")
    end
 
    table.insert(buttons,SceneManager.getRosettaString("refer_gbt"))
    table.insert(options,"refer_gbt")
-    table.insert(badges,"")
 
    if (userRole == GC.USER_ROLE_TYPE_CARRIER) then
       table.insert(buttons,SceneManager.getRosettaString("locate_drivers"))
       table.insert(options,"locate_drivers")
-      table.insert(badges,"")
    end
 
    table.insert(buttons,SceneManager.getRosettaString("log_out"))
    table.insert(options,"log_out")
-   table.insert(badges,"")
 	
    navMenu:show({
       options = buttons,
       ids = options,
-      badges = badges,
-      callback=toolsComplete,
-      groups = groups
+      callback=toolsComplete
    })
 end
 
@@ -272,15 +308,15 @@ optionOnComplete = function( event,value )
    if (event.phase == "release") then
       if (i == "my_trailers") then
          SceneManager.goToMyTrailers()
-      elseif (i == "my_quotes") then
+      elseif (i == "my_quotes" or i == "my_quotes_behind") then
          SceneManager.goToMyQuotes()
          --SceneManager.goTo("my_quotes",nil,false,nil)
-      elseif (i == "my_shipments") then
+      elseif (i == "my_shipments" or i == "my_shipments_behind") then
          SceneManager.goToMyShipments()
          --SceneManager.goTo("my_shipments",nil,false,nil)
       elseif (i == "feedback") then
          SceneManager.goToMyFeedback()
-      elseif (i == "gbt_bank") then
+      elseif (i == "gbt_bank" or i == "gbt_bank_behind") then
          --SceneManager.goToMyBanking()
          -- Only these masterRoles can access bank. Not sure why client doesn't want to hide button instead
          local canAccess = false
@@ -301,11 +337,11 @@ optionOnComplete = function( event,value )
          handleLogout()
       elseif (i == "locate_shipment") then
          SceneManager.goToLocateShipment()
-      elseif (i == "message_center") then
+      elseif (i == "message_center" or i == "message_center_behind") then
          SceneManager.goToMessageCenter()
       elseif (i == "locate_drivers") then
          SceneManager.goToLocateDrivers()
-      elseif (i == "my_loads") then
+      elseif (i == "my_loads" or i =="my_loads_behind") then
          SceneManager.goToMyShipments()
       elseif (i == "send_location") then
          toggleLocationState()
@@ -327,6 +363,9 @@ optionOnComplete = function( event,value )
             showLocation = true
             promptDriverLocation()
          end
+      elseif (i== "btnPODUpload") then
+         --SceneManager.showPODPhoto()
+         SceneManager.goToPODShipments()
       end
    elseif (event.phase == "moved") then
       local dy = math.abs( ( event.y - event.yStart ) )
@@ -391,6 +430,8 @@ local function updateBadge(badge)
    
    if (badge.id == "messages") then
       count = messageCounts.totalCount
+   elseif (badge.id == "my_loads") then
+      count = loadcount;
    elseif (badge.id == "quote_activity") then
       count = messageCounts[GC.MESSAGE_TYPE_QUOTE]
    elseif (badge.id == "shipment_activity") then
@@ -877,6 +918,21 @@ local function addShipperContent()
 
    setCurrentScrollPosition()
 
+
+   idx = getNextElement()
+
+   elements[idx] = widget.newButton{
+      id = "my_quotes_behind",
+      width = scrollView.innerWidth/2,
+      height = 70,
+      cornerRadius = 0,
+      strokeWidth = 0,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMin + scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+   scrollView:insert(elements[idx])
+
    idx = getNextElement()
 
    elements[idx] = widget.newButton{
@@ -900,6 +956,21 @@ local function addShipperContent()
 
    addBadge(0,"quote_activity",nil,scrollView.midX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
+
+   idx = getNextElement()
+
+   elements[idx] = widget.newButton{
+      id = "my_shipments_behind",
+      width = scrollView.innerWidth/2,
+      height = 70,
+      cornerRadius = 0,
+      strokeWidth = 0,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+   scrollView:insert(elements[idx])
+
    idx = getNextElement()
 
    elements[idx] = widget.newButton{
@@ -919,7 +990,7 @@ local function addShipperContent()
    }
    scrollView:insert(elements[idx])
 
-   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, elements[idx-1].y
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, elements[idx-2].y
 
    addBadge(0,"shipment_activity",nil,scrollView.maxX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
@@ -935,6 +1006,20 @@ local function addShipperContent()
    local dividerY = elements[idx].y
 
    setCurrentScrollPosition()
+
+   idx = getNextElement()
+
+   elements[idx] = widget.newButton{
+      id = "message_center_behind",
+      width = scrollView.innerWidth/2,
+      height = 70,
+      cornerRadius = 0,
+      strokeWidth = 0,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMin + scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+   scrollView:insert(elements[idx])
 
    idx = getNextElement()
 
@@ -959,6 +1044,22 @@ local function addShipperContent()
 
    addBadge(0,"messages",nil,scrollView.midX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
+
+   idx = getNextElement()
+
+   elements[idx] = widget.newButton{
+      id = "gbt_bank_behind",
+      width = scrollView.innerWidth/2,
+      height = 70,
+      cornerRadius = 0,
+      strokeWidth = 0,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+   scrollView:insert(elements[idx])
+
+
    idx = getNextElement()
 
    elements[idx] = widget.newButton{
@@ -978,7 +1079,7 @@ local function addShipperContent()
    }
    scrollView:insert(elements[idx])
 
-   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, elements[idx-1].y
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, elements[idx-2].y
 
    addBadge(0,"gbt_bank",nil,scrollView.maxX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
@@ -1158,6 +1259,22 @@ local function addCarrierContent()
 
    setCurrentScrollPosition()
 
+
+   idx = getNextElement()
+
+   elements[idx] = widget.newButton{
+      id = "my_quotes_behind",
+      width = scrollView.innerWidth/2,
+      height = 70,
+      cornerRadius = 0,
+      strokeWidth = 0,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMin + scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+   scrollView:insert(elements[idx])
+
+
    idx = getNextElement()
 
    elements[idx] = widget.newButton{
@@ -1181,6 +1298,21 @@ local function addCarrierContent()
 
    addBadge(0,"quote_activity",nil,scrollView.midX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
+
+   idx = getNextElement()
+
+   elements[idx] = widget.newButton{
+      id = "my_shipments_behind",
+      width = scrollView.innerWidth/2,
+      height = 70,
+      cornerRadius = 0,
+      strokeWidth = 0,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+   
+
    idx = getNextElement()
 
    elements[idx] = widget.newButton{
@@ -1200,7 +1332,7 @@ local function addCarrierContent()
    }
    scrollView:insert(elements[idx])
 
-   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, elements[idx-1].y
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, elements[idx-2].y
 
    addBadge(0,"shipment_activity",nil,scrollView.maxX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
@@ -1216,6 +1348,21 @@ local function addCarrierContent()
    local dividerY = elements[idx].y
 
    setCurrentScrollPosition()
+
+   idx = getNextElement()
+
+   elements[idx] = widget.newButton{
+      id = "message_center_behind",
+      width = scrollView.innerWidth/2,
+      height = 70,
+      cornerRadius = 0,
+      strokeWidth = 0,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMin + scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+   
+
 
    idx = getNextElement()
 
@@ -1240,6 +1387,21 @@ local function addCarrierContent()
 
    addBadge(0,"messages",nil,scrollView.midX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
+
+   idx = getNextElement()
+
+   elements[idx] = widget.newButton{
+      id = "gbt_bank_behind",
+      width = scrollView.innerWidth/2,
+      height = 70,
+      cornerRadius = 0,
+      strokeWidth = 0,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+   
+
    idx = getNextElement()
 
    elements[idx] = widget.newButton{
@@ -1259,7 +1421,7 @@ local function addCarrierContent()
    }
    scrollView:insert(elements[idx])
 
-   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, elements[idx-1].y
+   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, elements[idx-2].y
 
    addBadge(0,"gbt_bank",nil,scrollView.maxX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
@@ -1341,45 +1503,208 @@ local function addCarrierContent()
 
    setCurrentScrollPosition("location")
 end
+local function alertDismiss(event)
+   showingAlert = false
+end
+local function enableLoggingCallback( user )
+   if (user) then
+      --response = json.decode(user.response)
+      if user.enableLogging == "true" then
+         bgServices.startLocationService()
+         if user.userMessage ~= nil and user.userMessage ~= "" and ShowedFirstLoad==nil then
+            
+            alert:show({message = user.userMessage,
+                  buttons={SceneManager.getRosettaString("ok")}})
+            
+         end
+      else
+         --local alert = native.showAlert( "Corona", response.enableLogging , { "OK"}, onComplete )
+         
+      end 
+   end  
+   composer.hideOverlay()
+end
+
+function checkLogging()
+   api.checkLogging({sid=SceneManager.getUserSID(),callback=enableLoggingCallback})
+end
+bgServices.EnableLoggingCall = checkLogging
+
+
+local function LogInstallCallBack(response)
+  print('callback')
+end
+local function FirstLoadAlertCallBack(event)
+   api.LogInstall({sid=SceneManager.getUserSID(),callback=LogInstallCallBack})
+end
+local function apiLoadsCallback(response)
+  
+   if (response == nil or response.user == nil) then
+      messageQ = "invalid_server_response"
+   elseif (response.user.statusId == GC.API_ERROR) then
+         messageQ = response.error_msg.errorMessage or "server_error"
+   elseif (response.user.statusId == GC.API_USER_APPROVED) then
+      if (response.user.userGuid ~= nil and response.user.masterRole ~= nil) then
+         loadcount = response.loadCount
+      else
+         messageQ = "invalid_server_response"
+      end
+   else
+      messageQ = "user_not_approved"
+   end
+   if(db.checkFirstLoad("WelcomeDriver")) then
+      if loadcount>0 then
+         showingAlert = true
+          alert:show({title = "Welcome",buttonAlign="horizontal",
+          message = SceneManager.getRosettaString("DRIVER_FIRSTLOAD_LOAD"),
+          buttons={SceneManager.getRosettaString("ok")},
+          callback=FirstLoadAlertCallBack})
+      else
+         showingAlert = true
+          alert:show({title = "Welcome",buttonAlign="horizontal",
+          message = SceneManager.getRosettaString("DRIVER_FIRSTLOAD_NOLOAD"),
+          buttons={SceneManager.getRosettaString("ok")},
+          callback=FirstLoadAlertCallBack})
+      end
+      
+      ShowedFirstLoad = true
+   end
+   gettingloads = false
+   checkLogging()
+   composer.hideOverlay()
+   
+end
+local function getLoads()
+   if(gettingloads ~= true) then
+      gettingloads=true
+      api.DriverLoadCount({sid=SceneManager.getUserSID(),callback=apiLoadsCallback})
+   end 
+end
 
 local function addDriverContent()
+   
+
    local idx = getNextElement()
 
-   elements[idx] = display.newRect(0,0,scrollView.innerWidth,100)
-   elements[idx].id = "your_alerts"
+   local opt = {
+      width = 148,
+      height = 22,
+      numFrames = 2,
+      sheetContentWidth = 148,
+      sheetContentHeight = 44
+   }
+   local locationSheet = graphics.newImageSheet( "graphics/locating-sprite.png", opt )
+
+   local sequenceData = {
+      name = "status",
+      start = 1,
+      count = 2,
+   }
+
+   elements[idx] = display.newRect(0,0,scrollView.innerWidth,40)
+   elements[idx].id = "LocationAlertBG"
    elements[idx]:setFillColor(1,1,1)
-   elements[idx].x, elements[idx].y = scrollView.x, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING
+    elements[idx].x, elements[idx].y = display.contentCenterX, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING
    scrollView:insert(elements[idx])
 
-   idx = getNextElement()
 
-   elements[idx] = display.newText( {text=SceneManager.getRosettaString("your_alerts"),font = GC.APP_FONT, fontSize = 20} )
-   elements[idx]:setFillColor(unpack(GC.DARK_GRAY))
-   elements[idx].x, elements[idx].y = elements[idx-1].stageBounds.xMin + elements[idx].width * 0.5 + PADDING, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING * 2
+   elements[idx] = display.newSprite( locationSheet, sequenceData )
+   elements[idx].id = "LocationAlert"
+   elements[idx]:setSequence( "status" )
+   elements[idx].currentBall = 1
+   elements[idx]:setFrame( elements[idx].currentBall )
+   elements[idx].height = 22
+   elements[idx].width=148
+   elements[idx].x = display.contentCenterX
+   elements[idx].y = getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING + 10
    scrollView:insert(elements[idx])
 
    setCurrentScrollPosition()
 
-    local function createSubmitButton() 
-	local buttonSubmit = display.newRect(0,0,83,64)
-	buttonSubmit.x, buttonSubmit.y = (getElementById("your_alerts").stageBounds.xMin + scrollView.quarterSize)+150, getCurrentScrollPosition() + elements[idx].height * 0.5 - PADDING * 2
-	buttonSubmit:setFillColor(1,0,1)
-	scrollView:insert(buttonSubmit)
-	local function touchToSubmit(event)
-		if event.phase == "ended" then
-		--if event.phase == "release" then
-			print(" calling photo send here")
+   --elements[idx] = display.newRoundedRect( 0, 0, display.contentWidth-22, 50 , GC.INPUT_ROUNDED_CORNER )
+   --elements[idx].id = "LocationAlert"
+   --elements[idx]:setFillColor(unpack(GC.MEDIUM_GRAY3))
+   --elements[idx].strokeWidth = GC.INPUT_FIELD_BORDER_WIDTH
+   --elements[idx]:setStrokeColor(unpack(GC.INPUT_FIELD_BORDER_COLOR))
+   --elements[idx].x, elements[idx].y = display.contentCenterX, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING
+   --scrollView:insert(elements[idx])
 
-			sceneClaimPhoto.onSubmit()
-			return true
-		end
-	end
-	buttonSubmit:addEventListener("touch",touchToSubmit)
- end
+   --idx = getNextElement()
+   --elements[idx] = display.newText({
+   --   text = SceneManager.getRosettaString("LOCATION_INACTIVE"),
+   --   width = 400,
+   --   fontSize =  GC.BUTTON_FONT_SIZE,
+   --   align = "center",
+   --   font = GC.BUTTON_FONT
+   --})
+   --elements[idx].id = "txtLocationAlert"
+   --elements[idx].x, elements[idx].y = display.contentCenterX, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING + 5
+   --elements[idx].font = GC.BUTTON_FONT
+   --scrollView:insert(elements[idx])
+   --setCurrentScrollPosition()
+
+ --   idx = getNextElement()
+ --   elements[idx] = display.newRect(0,0,scrollView.innerWidth,100)
+ --   elements[idx].id = "your_alerts"
+ --   elements[idx]:setFillColor(1,1,1)
+ --   elements[idx].x, elements[idx].y = scrollView.x, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING 
+ --   scrollView:insert(elements[idx])
+
+ --   idx = getNextElement()
+
+ --   elements[idx] = display.newText( {text=SceneManager.getRosettaString("your_alerts"),font = GC.APP_FONT, fontSize = 20} )
+ --   elements[idx]:setFillColor(unpack(GC.DARK_GRAY))
+ --   elements[idx].x, elements[idx].y = elements[idx-1].stageBounds.xMin + elements[idx].width * 0.5 + PADDING, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING * 2
+ --   scrollView:insert(elements[idx])
+
+ --   setCurrentScrollPosition()
+
+ --    local function createSubmitButton() 
+	-- local buttonSubmit = display.newRect(0,0,83,64)
+	-- buttonSubmit.x, buttonSubmit.y = (getElementById("your_alerts").stageBounds.xMin + scrollView.quarterSize)+150, getCurrentScrollPosition() + elements[idx].height * 0.5 - PADDING * 2
+	-- buttonSubmit:setFillColor(1,0,1)
+	-- scrollView:insert(buttonSubmit)
+	-- local function touchToSubmit(event)
+	-- 	if event.phase == "ended" then
+	-- 	--if event.phase == "release" then
+	-- 		print(" calling photo send here")
+
+	-- 		sceneClaimPhoto.onSubmit()
+	-- 		return true
+	-- 	end
+	-- end
+	-- buttonSubmit:addEventListener("touch",touchToSubmit)
+
+ -- end
    
    --createSubmitButton()
 
+  
+
+   setCurrentScrollPosition()
+
    idx = getNextElement()
+
+   elements[idx] = widget.newButton{
+      id = "btnPODUpload",
+      defaultColor = GC.ORANGE2,
+      overColor = GC.BUTTON_ACTION_BACKGROUND_COLOR_OVER,
+      font = GC.BUTTON_FONT,
+      fontSize = GC.BUTTON_FONT_SIZE,
+      label="Upload POD",
+      labelColor = { default=GC.BUTTON_TEXT_COLOR, over=GC.BUTTON_TEXT_COLOR_OVER },
+      width = scrollView.innerWidth,
+      height = 35,
+      cornerRadius = GC.BUTTON_ACTION_RADIUS_SIZE,
+      strokeColor = GC.BUTTON_ACTION_BORDER_COLOR,
+      strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = scrollView.x, getCurrentScrollPosition() + elements[idx].height
+   setCurrentScrollPosition()
+
+    idx = getNextElement()
 
    elements[idx] = display.newRect(0,0,scrollView.innerWidth,1)
    elements[idx].id = "alert_divider"
@@ -1387,12 +1712,26 @@ local function addDriverContent()
    elements[idx].x, elements[idx].y = scrollView.x, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING
    scrollView:insert(elements[idx])
 
+   setCurrentScrollPosition()
+
    local dividerY = elements[idx].y
 
-   setCurrentScrollPosition()
+  
 
    idx = getNextElement()
 
+   elements[idx] = widget.newButton{
+      id = "message_center_behind",
+      width = scrollView.innerWidth/2,
+      height = 70,
+      cornerRadius = 0,
+      strokeWidth = 0,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = getElementById("alert_divider").stageBounds.xMin + scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+
+   idx = getNextElement()
    elements[idx] = widget.newButton{
       id = "message_center",
       default = "graphics/mail.png",
@@ -1410,10 +1749,24 @@ local function addDriverContent()
    }
    scrollView:insert(elements[idx])
 
-   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMin + scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+   elements[idx].x, elements[idx].y = getElementById("alert_divider").stageBounds.xMin + scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
 
-   addBadge(0,"messages",nil,scrollView.midX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
+   addBadge(0,"messages",nil,scrollView.midX - BADGE_SIZE * 0.5 - PADDING * 0.5-10, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
+   idx = getNextElement()
+
+   elements[idx] = widget.newButton{
+      id = "my_loads_behind",
+      width = scrollView.innerWidth/2,
+      height = 70,
+      cornerRadius = 0,
+      strokeWidth = 0,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = getElementById("alert_divider").stageBounds.xMax - scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+
+
    idx = getNextElement()
 
    elements[idx] = widget.newButton{
@@ -1433,13 +1786,13 @@ local function addDriverContent()
    }
    scrollView:insert(elements[idx])
 
-   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, elements[idx-1].y
+   elements[idx].x, elements[idx].y = getElementById("alert_divider").stageBounds.xMax - scrollView.quarterSize, elements[idx-2].y
 
    addBadge(0,"my_loads",nil,scrollView.maxX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
-   adjustSectionHeight("your_alerts")
+   adjustSectionHeight("alert_divider")
 
-   setCurrentScrollPosition("your_alerts")
+   setCurrentScrollPosition("alert_divider")
 
    idx = getNextElement()
 
@@ -1488,6 +1841,12 @@ local function addDriverContent()
    setCurrentScrollPosition("location")
    
 
+   if(SceneManager.getLocationState()) then
+      SetLocatingLabelActive()
+   end
+
+   getLoads()
+
 end
 
 local function addContent()
@@ -1530,6 +1889,8 @@ local function addContent()
    -- Social Bar
    addSocialContent()
 
+   
+
 end
 
 function scene:create( event )
@@ -1538,6 +1899,7 @@ function scene:create( event )
    menuSelected = false
    showLocation = false
    updatingBadges = false
+   gettingloads = false
 
    bg = display.newRect( sceneGroup,0, 0, 360, 570 )
    bg:setFillColor(unpack(GC.LIGHT_GRAY2))
@@ -1580,7 +1942,12 @@ function scene:create( event )
    --lotsOfTextObject.y = titleText.y + titleText.contentHeight + 10
 
    --scrollView:insert( lotsOfTextObject )
+
+
 end
+
+
+
 
 function scene:show( event )
 
@@ -1588,10 +1955,14 @@ function scene:show( event )
    local phase = event.phase
 
    if ( phase == "will" ) then
+      
    elseif ( phase == "did" ) then
       updateBadges()
+      
       _G.appExit = true
+      
    end
+   
 end
 
 function scene:hide( event )
@@ -1609,6 +1980,7 @@ end
 
 function scene:update()
    updateBadges()
+
 end
 
 -- Called prior to the removal of scene's "view" (display group)

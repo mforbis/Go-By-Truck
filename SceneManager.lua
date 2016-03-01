@@ -11,6 +11,7 @@ local utils = require("utils")
 local SETTINGS_NRUNS_KEY = "nRuns"
 local SETTINGS_AUTOMATIC_LOGIN_KEY = "automaticLogin"
 local SETTINGS_USER_ID_KEY = "userID"
+local SETTINGS_USER_PHONE_KEY = "userPhone"
 local SETTINGS_USER_PASS_KEY = "colors"
 local SETTINGS_USER_SID_KEY = "userSID"
 local SETTINGS_LANGUAGE_KEY = "language"
@@ -41,7 +42,7 @@ local userFirstname = "Driver"
 local userLastname = "Mobile"
 
 --local WEB_BASE_URL = "https://www.gbthq.com:8443"
-local WEB_BASE_URL = "https://www.gobytruck.com"
+local WEB_BASE_URL = GC.MAIN_URL
 
 local SESSION_TIMEOUT_MS = 6 * 60 * 1000 -- 6 Minutes
 local sessionTimer
@@ -273,6 +274,16 @@ function setUserID(id)
 	setSetting(SETTINGS_USER_ID_KEY,id)
 end
 
+function getUserPhoneID()
+	-- TODO: Need to decrypt this value
+	return getSetting(SETTINGS_USER_PHONE_KEY,"")
+end
+
+function setUserPhoneID(id)
+	-- TODO: Need to encrypt this value
+	setSetting(SETTINGS_USER_PHONE_KEY,id)
+end
+
 function setUserTag(id)
 	_G.setTag(id)
 end
@@ -383,6 +394,7 @@ function init()
 	
 	automaticLogin = getSetting(SETTINGS_AUTOMATIC_LOGIN_KEY,false)
 	userSID = getSetting(SETTINGS_USER_SID_KEY,"")
+	
 	location = getSetting(SETTINGS_LOCATION_KEY,false)
 	
 	--hasSound = getSetting("hasSound",true)
@@ -420,6 +432,10 @@ end
 
 function showOverlay(scene,params)
 	composer.showOverlay(scene, {effect = GC.OVERLAY_ACTION_SHOW,time=GC.SCENE_TRANSITION_TIME_MS, isModal=true, params = params})
+end
+
+function goToHomeScene()
+	composer.gotoScene("SceneChooser")
 end
 
 function goToLoginScene()
@@ -465,7 +481,9 @@ end
 function goToMyShipments()
 	go("SceneMyShipments")
 end
-
+function goToPODShipments()
+	go("ScenePODShipments")
+end
 function showShipmentDetails(params)
 	showOverlay("SceneShipmentDetails",params)
 	--go("SceneShipmentDetails")
@@ -515,6 +533,11 @@ end
 
 function showClaimPhoto(params)
 	composer.showOverlay("SceneClaimPhoto", {effect = "",time=GC.SCENE_TRANSITION_TIME_MS, isModal=true,params=params})
+end
+
+function showPODPhoto(params)
+	go("ScenePODUpload",params)
+	--composer.showOverlay("ScenePODUpload", {effect = "",time=GC.SCENE_TRANSITION_TIME_MS, isModal=true,params=params})
 end
 
 function showReferGBT()

@@ -12,7 +12,7 @@ local DEFAULT_FONT_SIZE = 20
 local LISTVIEW_ROW_HEIGHT = 45
 local LISTVIEW_MINIMUM_ROWS = 3 -- Anything less then lock scrolling and adjust height
 local LISTVIEW_ROW_COLORS = {GC.DARK_GRAY2,GC.DARK_GRAY2}
-local LISTVIEW_OVER_COLOR = GC.DARK_GRAY
+local LISTVIEW_OVER_COLOR = {233/255,78/255,27/255}
 local LISTVIEW_TEXT_COLOR = GC.COLOR_GRAY
 local LISTVIEW_TEXT_COLOR_OVER = GC.COLOR_GRAY
 local LISTVIEW_SELECTOR_SIZE = 8
@@ -44,8 +44,6 @@ function navMenu:show(params)
 	self.ids = params.ids
 
 	self.options = params.options
-	self.badges = params.badges
-	self.groups = params.groups
 	self.selected = params.selected or 0
 	self.radio = true
 	
@@ -163,30 +161,15 @@ function navMenu:show(params)
 			row.label:removeSelf()
 			row.label = display.newText(row,self.options[row.index], minX + PADDING,groupContentHeight*0.5,textWidth,groupContentHeight,font, self.list.fontSize)
 		end
-		if self.badges[row.index] ~= "" then
-			local badge = display.newGroup()
-			local badgebg = display.newImageRect(row,"graphics/circle.png", 25, 25)
-			
-			badgebg.y=20
-			badgebg:setFillColor(unpack(GC.ORANGE))
-			badgebg.x=display.contentWidth-70
-			lblbadge = display.newText({text=self.badges[row.index],x=badgebg.x,y=badgebg.y + 5,width=25,height=25,font=GC.APP_FONT,fontSize=12,align="center"})
-			badge:insert( badgebg )
-			badge:insert( lblbadge )
-			row:insert(badge)
-		end
 
 		row.label:setFillColor(unpack(LISTVIEW_TEXT_COLOR))
 		row.label.anchorX = 0
 
-		for i=1,#self.groups do
-			 if self.groups[i] == self.options[row.index] then
-			 	row.divider = display.newRect(row,0,0,row.width,1)
-				row.divider:setFillColor(unpack(GC.LIGHT_GRAY))
-				row.divider.x, row.divider.y = groupContentWidth * 0.5, groupContentHeight - 1
-			 end
-		end
-		
+		--if (#self.options > 1 and row.index < #self.options) then
+			row.divider = display.newRect(row,0,0,row.width,1)
+			row.divider:setFillColor(unpack(GC.DARK_GRAY))
+			row.divider.x, row.divider.y = groupContentWidth * 0.5, groupContentHeight - 1
+		--end
 	end
 
 	self.onRowTouch = function( event )
