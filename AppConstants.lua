@@ -4,7 +4,7 @@ module(..., package.seeall)
 ---------- MAIN APPLICATION CONFIG --------------
 -------------------------------------------------
 APP_FONT = "Open Sans Light" --native.systemFontBold
-IS_DEV = false
+IS_DEV = true
 SHOW_SPLASH_MS = 3000
 
 local port = 8443
@@ -157,6 +157,7 @@ API_ROLE_SHIPPER_ACCOUNTING = 23
 
 -- Image Types
 IMAGE_TYPE_CLAIM_PHOTO = 219
+IMAGE_TYPE_POD_PHOTO = 218
 
 -- Load Types
 TRUCKLOAD = 8

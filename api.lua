@@ -437,29 +437,32 @@ local function sendNetworkRequest(url,command)
 			params.headers = headers
 			-----------------------------
 			--END GBT specific commands--
-			print("URL = "..tostring(url))
+			print("URL = "..tostring(baseURL..url))
 			-----------------------------
 			
 			-- Params (file, filename, progress and time out)
 			local params = {};
 			print("	filename = "..tostring(filename))
-			params.body = "fileBinary=" .. fileEncoded .. "&fileName="..filename;
+
+			fileEncoded = string.gsub(tostring(fileEncoded), "+","%%2B");
+
+			params.body = "document=" .. fileEncoded .. "&fileName="..filename;
 			--params.body = "fileBinary=" .. fileEncoded .. "&sid="..GC.globalSID.."&loadIdGuid="..GC.globalGUID.."&fileName="..filename;
 			params.progress = "upload";
 			params.timeout = uploadTimeout;
 			
 			-- Get the file size for progress bar
 			fileSize = string.len(fileEncoded);
-			
+			--print(fileSize);
 			-- Set up the progress bar
 			
 			local BASE_URL_TEST = "http://moonbeam.co/processupload.aspx"	
-			
+			--print(fileEncoded)
 			-- Clean up
 			io.close( fileHandle );
 			print("	GBT CALLING PRE-POST HERE")
 			-- Make the POST
-			network.request( BASE_URL_TEST, "POST", networkListener,  params);
+			network.request( baseURL..url, "POST", networkListener,  params);
 			--network.request( POST_URL, "POST", handleCallback, params) -- GBT post method
 			print("	GBT CALLING POST-POST HERE")
 		end
@@ -838,7 +841,21 @@ function sendClaimPhoto(params)
 	print("params.loadIdGuid = "..tostring(params.loadIdGuid))
 	print("GC.IMAGE_TYPE_CLAIM_PHOTO = "..tostring(GC.IMAGE_TYPE_CLAIM_PHOTO))
 	print("---------------------------------------------------")
-	sendNetworkRequest("sid="..params.sid.."&loadIdGuid="..params.loadIdGuid.."&t="..GC.IMAGE_TYPE_CLAIM_PHOTO,"sendImage")
+	sendNetworkRequest("uploadpod?sid="..params.sid.."&loadIdGuid="..params.loadIdGuid.."&t="..GC.IMAGE_TYPE_CLAIM_PHOTO,"sendImage")
+	print(" sendNetworkRequest finish")
+end
+function sendPODPhoto(params)
+	setCallback(params.callback)
+	--isTesting = "sendClaimPhoto"
+	attachImage = true
+	print(" sendNetworkRequest call")
+	print("---------------------------------------------------")
+	print("params.sid = "..tostring(params.sid))
+	print("params.loadIdGuid = "..tostring(params.loadIdGuid))
+	print("params.addressGuid = "..tostring(params.addressGuid))
+	print("GC.IMAGE_TYPE_POD_PHOTO = "..tostring(GC.IMAGE_TYPE_POD_PHOTO))
+	print("---------------------------------------------------")
+	sendNetworkRequest("sendImage?sid="..params.sid.."&loadIdGuid="..params.loadIdGuid.."&addressGuid="..params.addressGuid.."&t="..GC.IMAGE_TYPE_POD_PHOTO,"sendImage")
 	print(" sendNetworkRequest finish")
 end
 

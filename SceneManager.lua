@@ -481,7 +481,9 @@ end
 function goToMyShipments()
 	go("SceneMyShipments")
 end
-
+function goToPODShipments()
+	go("ScenePODShipments")
+end
 function showShipmentDetails(params)
 	showOverlay("SceneShipmentDetails",params)
 	--go("SceneShipmentDetails")
@@ -531,6 +533,11 @@ end
 
 function showClaimPhoto(params)
 	composer.showOverlay("SceneClaimPhoto", {effect = "",time=GC.SCENE_TRANSITION_TIME_MS, isModal=true,params=params})
+end
+
+function showPODPhoto(params)
+	go("ScenePODUpload",params)
+	--composer.showOverlay("ScenePODUpload", {effect = "",time=GC.SCENE_TRANSITION_TIME_MS, isModal=true,params=params})
 end
 
 function showReferGBT()

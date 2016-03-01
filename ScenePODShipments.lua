@@ -259,146 +259,6 @@ local function findShipmentIndexById(id)
    return index
 end
 
-local function showPODForm()
-   SceneManager.goTo("sign_pod",{loadIdGuid=shipments[currShipmentIndex].loadIdGuid,aid=shipments[currShipmentIndex].locations[dropOffIndex].addressGuid,sid=SceneManager.getUserSID()},true,nil)
-end
-
-local function detailsCallback(event)
-   --showingOverlay = false
-      
-   local id = event.target.id
-   if (id == "edit") then
-      -- TODO: go to post shipment
-      --SceneManager.goToPostShipment({id=shipments[currShipmentIndex].loadIdGuid})
-      SceneManager.goTo("post_shipment",{loadIdGuid=shipments[currShipmentIndex].loadIdGuid},false,onComplete)
-   elseif (id == "map") then
-      -- Old Way of using built-in browser
-      system.openURL("http://maps.google.com/maps?saddr="..utils.fixSpaces(shipments[currShipmentIndex].fromCityState).."&daddr="..utils.fixSpaces(shipments[currShipmentIndex].toCityState).."")
-   end
-end
-
-local function getDetailsCallback(response)
-   hideToast()
-   stopTimeout()
-
-   if (response == nil) then
-      messageQ = "invalid_server_response"
-   elseif (response.error_msg.errorMessage ~= "") then
-      messageQ = response.error_msg.errorMessage or "server_error"
-   else
-      --showingOverlay = true
-      canEdit =   (SceneManager.getUserRoleType() == GC.USER_ROLE_TYPE_SHIPPER and
-                  SHIPMENT_TYPES[shipmentType] == "incomplete")
-      response.loadIdGuid = response.loadIdGuid or response.options.loadIdGuid
-      
-      if (response.forkLift == nil and response.forklift) then
-         response.forkLift = response.forklift
-         response.liftgate = nil
-      end
-
-      if (detailsCommand == "show") then
-         SceneManager.showShipmentDetails({shipment = response,role=SceneManager.getUserRoleType(),canEdit=canEdit,callback=detailsCallback})
-      else
-         SceneManager.goToPostShipment(response)
-      end
-      detailsCommand = nil
-   end
-
-   if (messageQ) then
-      alert:show({buttonAlign = "horizontal",
-      message=SceneManager.getRosettaString(messageQ),
-      buttons={SceneManager.getRosettaString("ok")},callback=errorOncomplete})
-   end
-end
-
-local function getDetails()
-   showToast()
-   startTimeout()
-   api.getShipmentDetails({sid=SceneManager.getUserSID(),id=shipments[currShipmentIndex].loadIdGuid,showPD=false,callback=getDetailsCallback})
-end
-
-local function getLocationOptions(t)
-   local aliases = {}
-
-   for i = 1, #t do
-      table.insert(aliases,shipments[currShipmentIndex].locations[t[i]].name.." - "..shipments[currShipmentIndex].locations[t[i]].address)
-   end
-
-   return aliases
-end
-
-local function locationComplete(event,value)
-   dropOffIndex = value
-   showPODForm()
-end
-
-local function shipmentComplete(event,value)
-   local id = value
-   --print ("value: "..tostring(event.id))
-   if (id == "details") then
-      --detailsCommand = "show"
-      --getDetails()
-       SceneManager.goTo("shipment_details",{loadIdGuid=shipments[currShipmentIndex].loadIdGuid},true,nil)
-   elseif (id == "delete") then
-      showRemovePrompt()
-   elseif (id == "edit") then
-      --detailsCommand = "addEdit"
-      --getDetails()
-      --SceneManager.goToPostShipment({id=shipments[currShipmentIndex].loadIdGuid})
-      SceneManager.goTo("post_shipment",{loadIdGuid=shipments[currShipmentIndex].loadIdGuid},true,onComplete)
-   elseif (id == "view_accessorials") then
-      SceneManager.goTo("view_accessorials",{loadIdGuid=shipments[currShipmentIndex].loadIdGuid},true,onComplete)
-   elseif (id == "carrier_requested") then
-      SceneManager.goTo("carrier_requested",{loadIdGuid=shipments[currShipmentIndex].loadIdGuid},true,onComplete)
-   elseif (id == "request_accessorials") then
-      -- TODO: Get details first, and then show. Reason: We need addresses
-       --SceneManager.showRequestAccessorials({loadIdGuid=shipments[currShipmentIndex].loadIdGuid})
-       SceneManager.goTo("request_accessorials",{loadIdGuid=shipments[currShipmentIndex].loadIdGuid},true,onComplete)
-   elseif (id == "release_amount") then
-      -- TODO: Check out site to get a clue as to how this is supposed to work
-      SceneManager.goTo("release_amount",{releaseCode=shipments[currShipmentIndex].releaseCode},true,onComplete)
-   elseif (id == "view_map") then
-      -- View Map
-      -- NOTE: Temporary
-      -- NOTE: This has been temporarily moved here, since we can't call an overlay
-      -- while displaying another.
-      -- TODO: Once the getMyShipments API call matches getDriverLoads this
-      -- will be deprecated.
-      SceneManager.showMap({type=GC.SHOW_DIRECTIONS,data={sAddr=shipments[currShipmentIndex].fromCityState or shipments[currShipmentIndex].pickup.cityState,dAddr=shipments[currShipmentIndex].toCityState or shipments[currShipmentIndex].delivery.cityState}})
-   elseif (id == "view_ref_numbers") then
-      -- TODO: It seems there can be multiple numbers for some
-      -- Not 100% sure if this is for both the to and from locations.
-      alert:show({title = SceneManager.getRosettaString("view_ref_title"),
-         subTitle = SceneManager.getRosettaString("shipment",1).." #"..shipments[currShipmentIndex].loadIdGuid,
-         message = "PO Number(s)\n"..tostring(shipments[currShipmentIndex].po).."\nPU Number(s)\n"..tostring(shipments[currShipmentIndex].pu).."\nBOL Number\n"..tostring(shipments[currShipmentIndex].bol),messageAlign = "left",
-         buttons={SceneManager.getRosettaString("ok")}})
-   elseif (id == "sign_pod") then
-      -- TODO: Finish
-      local dropoffs = getLocationsByType(GC.LOCATION_TYPE_DROPOFF,shipments[currShipmentIndex].locations)
-      if (#dropoffs == 0) then
-         alert:show({title = SceneManager.getRosettaString("error"),
-            message = "Couldn't find any dropoff locations for this shipment.",
-            buttons={SceneManager.getRosettaString("ok")}})
-      elseif (#dropoffs > 1) then
-         -- show alert
-         local options = getLocationOptions(dropoffs)
-
-         alert:show({title = SceneManager.getRosettaString("select_location"),
-            list = {options = options,radio = false},ids = dropoffs,
-            buttons={SceneManager.getRosettaString("cancel")}, cancel = 1,
-            callback=locationComplete})
-      else
-         dropOffIndex = dropoffs[1]
-         showPODForm()
-      end
-   elseif (id == "claim_photos") then
-      -- NOTE: Probably need a way to know if we have already uploaded photos
-      -- for the currently selected load
-      SceneManager.showClaimPhoto({shipment=shipments[currShipmentIndex]})
-   end
-
-end
-
 -- handles individual row rendering
 local function onRowRender( event )
    local row = event.row
@@ -436,7 +296,7 @@ local function onRowRender( event )
    local statusText = nil
 
    if (SceneManager.getUserRoleType() == GC.USER_ROLE_TYPE_SHIPPER and SHIPMENT_TYPES[shipmentType] == "actionItems") then
- print(shipments[row.index].status)
+ --print(shipments[row.index].status)
      if (tostring(shipments[row.index].status) == tostring(GC.SHIPMENT_STATUS_MATCHED)) then
          statusText = "matched"
       elseif (tostring(shipments[row.index].status) == tostring(GC.SHIPMENT_STATUS_RELEASED)) then
@@ -505,67 +365,38 @@ local function onRowRender( event )
    end
 end
 
+
+
+local function shipmentComplete(event,value)
+   local addressGUID = value
+      
+   if tonumber(addressGUID) ~= nil then
+      --print(addressGUID)
+      --print ("value: "..tostring(event.id))
+      SceneManager.showPODPhoto({shipment={loadIdGuid=shipments[currShipmentIndex].loadIdGuid,addressGUID=addressGUID}})
+   end 
+end
+
 local function getShipmentOptions()
-   shipmentOptions = {}
+   shipmentAddresses = {}
    shipmentIds = {}
 
    local status = shipments[currListRow].status
 
-   table.insert(shipmentOptions,SceneManager.getRosettaString("shipment_details"))
-   table.insert(shipmentIds, "details")
-
-   if (SceneManager.getUserRoleType() == GC.USER_ROLE_TYPE_SHIPPER and
-      SHIPMENT_TYPES[shipmentType] == "incomplete") then
-      table.insert(shipmentOptions,SceneManager.getRosettaString("edit"))
-      table.insert(shipmentIds, "edit")
-   end
-
-   if (SceneManager.getUserRoleType() ~= GC.USER_ROLE_TYPE_DRIVER and SHIPMENT_TYPES[shipmentType] == "incomplete") then
-      table.insert(shipmentOptions,SceneManager.getRosettaString("delete"))
-      table.insert(shipmentIds, "delete")
-   end
-
-   if (status ~= GC.SHIPMENT_STATUS_CREATED and status ~= GC.SHIPMENT_STATUS_POSTED) then
-      if (shipments[currListRow].hasRequestedAccessorials == true) then
-         table.insert(shipmentOptions,SceneManager.getRosettaString("view_requested_accessorials"))
-         table.insert(shipmentIds, "carrier_requested")
-      else
-         table.insert(shipmentOptions,SceneManager.getRosettaString("view_accessorials"))
-         table.insert(shipmentIds, "view_accessorials")
-      end
-   end
-
-   if (tostring(shipments[currListRow].status) == tostring(GC.SHIPMENT_STATUS_MATCHED)) then
-      if (SceneManager.getUserRoleType() == GC.USER_ROLE_TYPE_CARRIER or
-         (SceneManager.getUserRoleType() == GC.USER_ROLE_TYPE_DRIVER and 
-         SceneManager.getRequestAccessorial() == true)) then
-         table.insert(shipmentOptions,SceneManager.getRosettaString("request_accessorials"))
-         table.insert(shipmentIds, "request_accessorials")
-      end
-      
-      if (SceneManager.getUserRoleType() == GC.USER_ROLE_TYPE_SHIPPER and  utils.isValidParameter(shipments[currShipmentIndex].releaseCode)) then
-         table.insert(shipmentOptions,SceneManager.getRosettaString("release_amount"))
-         table.insert(shipmentIds, "release_amount")
-      end
-   end
-
-   -- TODO: Find out if shipment state changes when POD signing shows up
-   -- TODO: Only show for certain loads (status, and podRequired)
-   if (isDriver) then
-      table.insert(shipmentOptions,SceneManager.getRosettaString("sign_pod"))
-      table.insert(shipmentIds, "sign_pod")
-      -- NOTE: This is remarked out for now. There is a known issue in regards to Lua
-      -- messing up Base64 with images once uploaded. 05/26/2015 MLH
-      --table.insert(shipmentOptions,SceneManager.getRosettaString("claim_photos"))
-      --table.insert(shipmentIds, "claim_photos")
-   end
-
-   table.insert(shipmentOptions,SceneManager.getRosettaString("view_map"))
-   table.insert(shipmentIds, "view_map")
-   --table.insert(shipmentOptions,SceneManager.getRosettaString("view_ref_numbers"))
-   --table.insert(shipmentIds, "view_ref_numbers")
+   --table.insert(shipmentAddresses,SceneManager.getRosettaString("shipment_details"))
+   --table.insert(shipmentIds, "details")
    
-   return shipmentOptions, shipmentIds
+   for i=1,shipments[currListRow].addresscount do
+      if shipments[currListRow]["address"..i].type==12 then
+         table.insert(shipmentAddresses,shipments[currListRow]["address"..i].address)
+         table.insert(shipmentIds, shipments[currListRow]["address"..i].addressGuid)
+      end
+   end
+   
+
+   
+   
+   return shipmentAddresses, shipmentIds
 end
 
 -- handles row presses/swipes
@@ -574,6 +405,7 @@ local function onRowTouch( event )
    local rowSelected = false
    local textColor = nil
 
+   --print(event.phase)
    if event.phase == "press" then
       rowSelected = true
       textColor = GC.WHITE
@@ -581,15 +413,26 @@ local function onRowTouch( event )
       textColor = GC.DARK_GRAY
       currListRow = row.index
       currShipmentIndex = findShipmentIndexById(row.id)
-      if (isEditing) then
-         showRemovePrompt()
-      elseif (not showingOverlay) then
-         local options, ids = getShipmentOptions()
-         alert:show({title = SceneManager.getRosettaString("please_select"),
+      
+      if shipments[currShipmentIndex].addresscount == 1 then
+         
+      end
+
+      local options, ids = getShipmentOptions()
+      if #options == 1 then
+         --for key, value in pairs(ids) do
+         --   print(key,value)
+         --end
+         --print(ids[1])
+         SceneManager.showPODPhoto({shipment={loadIdGuid=shipments[currShipmentIndex].loadIdGuid,addressGUID=ids[1]}})
+      else
+         alert:show({title = SceneManager.getRosettaString("pod_select_address"),
             list = {options = options,radio = false},ids = ids,
             buttons={SceneManager.getRosettaString("cancel")}, cancel = 1,
             callback=shipmentComplete})
       end
+      
+
    elseif event.phase == "swipeLeft" then
    elseif event.phase == "swipeRight" then
    else
@@ -661,21 +504,21 @@ local function getShipmentsCallback(response)
       -- TODO: Somebody thought it was a good idea to not follow the service
       -- request for the API, so the format of getMyShipments doesn't match getDriverLoads
       -- We now need to format the shipments, so they match from here on out
-      if (isDriver) then
-         shipments = {}
-         for key, value in pairs(response.shipments) do
-            -- turn address1..address2..addressn into locations table
-            value.locations = {}
-            local i = 1
-            while (value["address"..i]) do
-               table.insert(value.locations,value["address"..i])
-               i = i + 1
-            end
-            table.insert( shipments, value )
+      shipments = {}
+      for key, value in pairs(response.shipments) do
+         -- turn address1..address2..addressn into locations table
+         value.locations = {}
+         local i = 1
+         while (value["address"..i]) do
+            table.insert(value.locations,value["address"..i])
+            i = i + 1
          end
-      else
-         shipments = response.shipments
+         value.addresscount = i-1
+         table.insert( shipments, value )
+         
       end
+      
+        
 
       populateList()
    end
@@ -708,47 +551,6 @@ local function onBack()
    SceneManager.goToDashboard()
 end
 
--- NOTE: Alex
-local function filterOnComplete1(event,value)
-	print("PRESS CANCEL START")
-	if GC.GOT_LIST == true and GC.BACKPRESS == true then
-		return true
-	elseif GC.GOT_LIST == true and GC.BACKPRESS == false then
-		if (not event.target and value ~= shipmentType) then
-			print("PRESS CANCEL COMPLETE")
-			shipmentType = value
-			_G.shipmentTypeState = shipmentType
-			
-			btnFilter:setLabel(SceneManager.getRosettaString(SHIPMENT_TYPES[shipmentType]))
-			getShipments()
-		end
-	end
-end
-
-local function filterOnComplete(event,value)
-   if (event and not event.target and value ~= shipmentType) then
-      shipmentType = value
-      _G.shipmentTypeState = shipmentType
-      
-      btnFilter:setLabel(SceneManager.getRosettaString(SHIPMENT_TYPES[shipmentType]))
-      getShipments()
-   end
-end
-
-local function getFilterButtons()
-   local buttons = {}
-   for i=1, #SHIPMENT_TYPES do
-      table.insert(buttons,SceneManager.getRosettaString(SHIPMENT_TYPES[i]))
-   end
-   return buttons
-end
-
--- TODO: These can change based on userRoleType
-local function showFilterOptions()
-   alert:show({title = SceneManager.getRosettaString("choose_shipment_type"),
-      list = {options = getFilterButtons(),selected = shipmentType,listRows=6},
-      buttons={SceneManager.getRosettaString("cancel")}, callback=filterOnComplete})
-end
 
 local function onEventCallback(event)
    if (event.target.id == "back")then
@@ -791,10 +593,8 @@ function scene:create( event )
 
    isDriver = SceneManager.getUserRoleType() == GC.USER_ROLE_TYPE_DRIVER
 
-   local label = "my_shipments"
-   if (isDriver) then
-      label = "my_loads"
-   end
+   local label = "POD_shipments"
+   
 
    title = display.newText(sceneGroup, SceneManager.getRosettaString(label), 0, 0, GC.SCREEN_TITLE_FONT, GC.SCREEN_TITLE_SIZE)
    title.x, title.y = titleBG.x, titleBG.y
@@ -865,28 +665,7 @@ function scene:create( event )
    btnRefresh.y = titleBG.stageBounds.yMax + btnRefresh.height * 0.5 + 10
    sceneGroup:insert(btnRefresh)
 
-   if (not isDriver) then
-      btnFilter = widget.newButton{
-         id = "filter",
-         icon = {default="graphics/dropdown.png",width=16,height=12,align="right",matchTextColor=true},
-         labelAlign="left",xOffset = 10,
-         defaultColor = GC.BUTTON_ACTION_BACKGROUND_COLOR,
-         overColor = GC.BUTTON_ACTION_BACKGROUND_COLOR_OVER,
-         font = GC.BUTTON_FONT,
-         fontSize = 18,
-         label=SceneManager.getRosettaString(SHIPMENT_TYPES[shipmentType]),
-         labelColor = { default=GC.BUTTON_TEXT_COLOR, over=GC.BUTTON_TEXT_COLOR_OVER },
-         width = 140,
-         height = GC.BUTTON_ACTION_HEIGHT,
-         cornerRadius = GC.BUTTON_ACTION_RADIUS_SIZE,
-         strokeColor = GC.BUTTON_ACTION_BORDER_COLOR,
-         strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
-         onRelease = onEventCallback
-      }
-      btnFilter.x, btnFilter.y = btnFilter.width * 0.5 + BUTTON_OFFSET, titleBG.stageBounds.yMax + btnFilter.height * 0.5 + 10
-      sceneGroup:insert(btnFilter)
-   end
-   
+      
    divider = display.newRect( 0, 0, display.contentWidth, 2 )
    divider.anchorY = 0
    divider:setFillColor(unpack(GC.DARK_GRAY))

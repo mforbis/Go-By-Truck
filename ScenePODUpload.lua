@@ -107,8 +107,9 @@ local function onSubmit()
    print("PRESSING SEND HERE")
    GC.globalSID = SceneManager.getUserSID()
    GC.globalGUID = shipment.loadIdGuid
-	--api.sendClaimPhoto({sid=SceneManager.getUserSID(),loadIdGuid=shipment.loadIdGuid,callback=apiCallback}) -- commented out to test simple base encoding against Moonbeam server
-	api.sendClaimPhoto({sid=SceneManager.getUserSID(),loadIdGuid=shipment.loadIdGuid}) -- working code with substituted network.request callback.
+	print(shipment.addressGuid)
+   api.sendPODPhoto({sid=SceneManager.getUserSID(),loadIdGuid=shipment.loadIdGuid,addressGuid=shipment.addressGUID,callback=apiCallback}) 
+
 end
 
 local function onHome()
@@ -116,6 +117,7 @@ local function onHome()
 end
 
 local function onClose()
+   SceneManager.goToPODShipments()
    composer.hideOverlay(GC.OVERLAY_ACTION_DISMISS,GC.SCENE_TRANSITION_TIME_MS)
 end
 
@@ -155,7 +157,7 @@ local sessionComplete = function(event)
 	  GC.globalSID = SceneManager.getUserSID()
 	  GC.globalGUID = shipment.loadIdGuid
 	  globalImageName = "image.png"
-      GC.IMAGE_FILENAME = "sid="..GC.globalSID.."%26".."globalIdGuid="..GC.globalGUID.."%26".."t="..GC.IMAGE_TYPE_CLAIM_PHOTO.."%26"..globalImageName
+      GC.IMAGE_FILENAME = "sid="..GC.globalSID.."%26".."globalIdGuid="..GC.globalGUID.."%26".."t="..GC.IMAGE_TYPE_POD_PHOTO.."%26"..globalImageName
 	  print("GC.IMAGE_FILENAME = "..tostring(GC.IMAGE_FILENAME))
       display.save(photo, GC.IMAGE_FILENAME, system.DocumentsDirectory)
       
@@ -181,7 +183,7 @@ local sessionComplete = function(event)
    else
        -- Delay to allow filesystem to catch up.
       -- May be the cause of hangups on some devices.
-      --delayTimer = timer.performWithDelay( 1000, changeScene)
+      delayTimer = timer.performWithDelay( 1000, changeScene)
    end
 end
 
@@ -216,6 +218,11 @@ end
 function scene:create( event )
    sceneGroup = self.view
 
+   for key, value in pairs(event.params.shipment) do
+         print(key,value)
+         
+      end
+
    if (event.params and event.params.shipment) then
       shipment = event.params.shipment
    else
@@ -234,7 +241,7 @@ function scene:create( event )
    titleBG:setFillColor(unpack(GC.TITLE_BG_COLOR))
    titleBG.x, titleBG.y = display.contentCenterX, titleBG.height * 0.5
 
-   title = display.newText(overlayGroup, SceneManager.getRosettaString("claim_photos"), 0, 0, GC.SCREEN_TITLE_FONT, GC.SCREEN_TITLE_SIZE)
+   title = display.newText(overlayGroup, SceneManager.getRosettaString("pod_photos"), 0, 0, GC.SCREEN_TITLE_FONT, GC.SCREEN_TITLE_SIZE)
    title.x, title.y = titleBG.x, titleBG.y
 
    btnHome = widget.newButton{
@@ -323,7 +330,7 @@ function scene:hide( event )
       status.removeStatusMessage()
       _G.overlay = nil
    elseif ( phase == "did" ) then
-      composer.removeScene("SceneClaimPhoto")
+      composer.removeScene("ScenePODUpload")
    end
 end
 

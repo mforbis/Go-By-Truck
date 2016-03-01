@@ -363,6 +363,9 @@ optionOnComplete = function( event,value )
             showLocation = true
             promptDriverLocation()
          end
+      elseif (i== "btnPODUpload") then
+         --SceneManager.showPODPhoto()
+         SceneManager.goToPODShipments()
       end
    elseif (event.phase == "moved") then
       local dy = math.abs( ( event.y - event.yStart ) )
@@ -1640,43 +1643,68 @@ local function addDriverContent()
    --scrollView:insert(elements[idx])
    --setCurrentScrollPosition()
 
-   idx = getNextElement()
-   elements[idx] = display.newRect(0,0,scrollView.innerWidth,100)
-   elements[idx].id = "your_alerts"
-   elements[idx]:setFillColor(1,1,1)
-   elements[idx].x, elements[idx].y = scrollView.x, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING 
-   scrollView:insert(elements[idx])
+ --   idx = getNextElement()
+ --   elements[idx] = display.newRect(0,0,scrollView.innerWidth,100)
+ --   elements[idx].id = "your_alerts"
+ --   elements[idx]:setFillColor(1,1,1)
+ --   elements[idx].x, elements[idx].y = scrollView.x, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING 
+ --   scrollView:insert(elements[idx])
 
-   idx = getNextElement()
+ --   idx = getNextElement()
 
-   elements[idx] = display.newText( {text=SceneManager.getRosettaString("your_alerts"),font = GC.APP_FONT, fontSize = 20} )
-   elements[idx]:setFillColor(unpack(GC.DARK_GRAY))
-   elements[idx].x, elements[idx].y = elements[idx-1].stageBounds.xMin + elements[idx].width * 0.5 + PADDING, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING * 2
-   scrollView:insert(elements[idx])
+ --   elements[idx] = display.newText( {text=SceneManager.getRosettaString("your_alerts"),font = GC.APP_FONT, fontSize = 20} )
+ --   elements[idx]:setFillColor(unpack(GC.DARK_GRAY))
+ --   elements[idx].x, elements[idx].y = elements[idx-1].stageBounds.xMin + elements[idx].width * 0.5 + PADDING, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING * 2
+ --   scrollView:insert(elements[idx])
 
-   setCurrentScrollPosition()
+ --   setCurrentScrollPosition()
 
-    local function createSubmitButton() 
-	local buttonSubmit = display.newRect(0,0,83,64)
-	buttonSubmit.x, buttonSubmit.y = (getElementById("your_alerts").stageBounds.xMin + scrollView.quarterSize)+150, getCurrentScrollPosition() + elements[idx].height * 0.5 - PADDING * 2
-	buttonSubmit:setFillColor(1,0,1)
-	scrollView:insert(buttonSubmit)
-	local function touchToSubmit(event)
-		if event.phase == "ended" then
-		--if event.phase == "release" then
-			print(" calling photo send here")
+ --    local function createSubmitButton() 
+	-- local buttonSubmit = display.newRect(0,0,83,64)
+	-- buttonSubmit.x, buttonSubmit.y = (getElementById("your_alerts").stageBounds.xMin + scrollView.quarterSize)+150, getCurrentScrollPosition() + elements[idx].height * 0.5 - PADDING * 2
+	-- buttonSubmit:setFillColor(1,0,1)
+	-- scrollView:insert(buttonSubmit)
+	-- local function touchToSubmit(event)
+	-- 	if event.phase == "ended" then
+	-- 	--if event.phase == "release" then
+	-- 		print(" calling photo send here")
 
-			sceneClaimPhoto.onSubmit()
-			return true
-		end
-	end
-	buttonSubmit:addEventListener("touch",touchToSubmit)
+	-- 		sceneClaimPhoto.onSubmit()
+	-- 		return true
+	-- 	end
+	-- end
+	-- buttonSubmit:addEventListener("touch",touchToSubmit)
 
- end
+ -- end
    
    --createSubmitButton()
 
+  
+
+   setCurrentScrollPosition()
+
    idx = getNextElement()
+
+   elements[idx] = widget.newButton{
+      id = "btnPODUpload",
+      defaultColor = GC.ORANGE2,
+      overColor = GC.BUTTON_ACTION_BACKGROUND_COLOR_OVER,
+      font = GC.BUTTON_FONT,
+      fontSize = GC.BUTTON_FONT_SIZE,
+      label="Upload POD",
+      labelColor = { default=GC.BUTTON_TEXT_COLOR, over=GC.BUTTON_TEXT_COLOR_OVER },
+      width = scrollView.innerWidth,
+      height = 35,
+      cornerRadius = GC.BUTTON_ACTION_RADIUS_SIZE,
+      strokeColor = GC.BUTTON_ACTION_BORDER_COLOR,
+      strokeWidth = GC.BUTTON_ACTION_BORDER_WIDTH,
+      onEvent = optionOnComplete
+   }
+   scrollView:insert(elements[idx])
+   elements[idx].x, elements[idx].y = scrollView.x, getCurrentScrollPosition() + elements[idx].height
+   setCurrentScrollPosition()
+
+    idx = getNextElement()
 
    elements[idx] = display.newRect(0,0,scrollView.innerWidth,1)
    elements[idx].id = "alert_divider"
@@ -1684,9 +1712,11 @@ local function addDriverContent()
    elements[idx].x, elements[idx].y = scrollView.x, getCurrentScrollPosition() + elements[idx].height * 0.5 + PADDING
    scrollView:insert(elements[idx])
 
+   setCurrentScrollPosition()
+
    local dividerY = elements[idx].y
 
-   setCurrentScrollPosition()
+  
 
    idx = getNextElement()
 
@@ -1699,7 +1729,7 @@ local function addDriverContent()
       onEvent = optionOnComplete
    }
    scrollView:insert(elements[idx])
-   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMin + scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+   elements[idx].x, elements[idx].y = getElementById("alert_divider").stageBounds.xMin + scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
 
    idx = getNextElement()
    elements[idx] = widget.newButton{
@@ -1719,9 +1749,9 @@ local function addDriverContent()
    }
    scrollView:insert(elements[idx])
 
-   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMin + scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+   elements[idx].x, elements[idx].y = getElementById("alert_divider").stageBounds.xMin + scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
 
-   addBadge(0,"messages",nil,scrollView.midX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
+   addBadge(0,"messages",nil,scrollView.midX - BADGE_SIZE * 0.5 - PADDING * 0.5-10, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
    idx = getNextElement()
 
@@ -1734,7 +1764,7 @@ local function addDriverContent()
       onEvent = optionOnComplete
    }
    scrollView:insert(elements[idx])
-   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
+   elements[idx].x, elements[idx].y = getElementById("alert_divider").stageBounds.xMax - scrollView.quarterSize, getCurrentScrollPosition() + elements[idx].height * 0.5
 
 
    idx = getNextElement()
@@ -1756,13 +1786,13 @@ local function addDriverContent()
    }
    scrollView:insert(elements[idx])
 
-   elements[idx].x, elements[idx].y = getElementById("your_alerts").stageBounds.xMax - scrollView.quarterSize, elements[idx-2].y
+   elements[idx].x, elements[idx].y = getElementById("alert_divider").stageBounds.xMax - scrollView.quarterSize, elements[idx-2].y
 
    addBadge(0,"my_loads",nil,scrollView.maxX - BADGE_SIZE * 0.5 - PADDING * 0.5, dividerY + BADGE_SIZE * 0.5 + PADDING * 0.5)
    
-   adjustSectionHeight("your_alerts")
+   adjustSectionHeight("alert_divider")
 
-   setCurrentScrollPosition("your_alerts")
+   setCurrentScrollPosition("alert_divider")
 
    idx = getNextElement()
 
